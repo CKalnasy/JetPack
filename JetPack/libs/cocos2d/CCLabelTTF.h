@@ -29,6 +29,7 @@
 #import "CCSprite.h"
 #import "CCFontDefinition.h"
 #import "Platforms/CCNS.h"
+#import "CCRenderTexture.h"
 
 
 /** CCLabel is a subclass of CCTextureNode that knows how to render text labels
@@ -174,6 +175,9 @@
 - (void) setFontDefinition: (CCFontDefinition *) fontDef;
 
 
+
+
++(CCRenderTexture*) createStroke: (CCLabelTTF*) label   size:(float)size   color:(ccColor3B)cor;
 
 
 

@@ -7,9 +7,14 @@
 //
 
 #import "cocos2d.h"
-
 #import "AppDelegate.h"
-#import "IntroLayer.h"
+#import "MainMenu.h"
+#import "GlobalDataManager.h"
+#import "Game.h"
+#import <RevMobAds/RevMobAds.h>
+#import "Chartboost.h"
+#import "GameEnded.h"
+
 
 @implementation MyNavigationController
 
@@ -20,10 +25,10 @@
 	
 	// iPhone only
 	if( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone )
-		return UIInterfaceOrientationMaskLandscape;
+		return UIInterfaceOrientationMaskPortrait;
 	
 	// iPad only
-	return UIInterfaceOrientationMaskLandscape;
+	return UIInterfaceOrientationMaskPortrait;
 }
 
 // Supported orientations. Customize it for your own needs
@@ -32,11 +37,11 @@
 {
 	// iPhone only
 	if( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone )
-		return UIInterfaceOrientationIsLandscape(interfaceOrientation);
+		return UIInterfaceOrientationIsPortrait(interfaceOrientation);
 	
 	// iPad only
 	// iPhone only
-	return UIInterfaceOrientationIsLandscape(interfaceOrientation);
+	return UIInterfaceOrientationIsPortrait(interfaceOrientation);
 }
 
 // This is needed for iOS4 and iOS5 in order to ensure
@@ -47,18 +52,39 @@
 	if(director.runningScene == nil) {
 		// Add the first scene to the stack. The director will draw it immediately into the framebuffer. (Animation is started automatically when the view is displayed.)
 		// and add the scene to the stack. The director will run it when it automatically when the view is displayed.
-		[director runWithScene: [IntroLayer scene]];
+		[director runWithScene: [MainMenu scene]];
 	}
 }
 @end
 
+@interface AppController () <ChartboostDelegate>
+@end
 
-@implementation AppController
+
+
+@implementation AppController 
 
 @synthesize window=window_, navController=navController_, director=director_;
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+- (BOOL)prefersStatusBarHidden
 {
+    return YES;
+}
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{    
+    [RevMobAds startSessionWithAppID:@"522e77a1db7709c9f9000031"];
+    [RevMobAds session].testingMode = RevMobAdsTestingModeWithAds;
+    
+    [self vungleStart];
+    
+    Chartboost* cbv = [GlobalDataManager sharedGlobalDataManager].cb;
+    cbv = [Chartboost sharedChartboost];
+    cbv.appId = @"522e7eb717ba477e16000009";
+    cbv.appSignature = @"3ffe2184c225347db82fd1e9339e2bc30a299cc2";
+    
+    [cbv startSession];
+    [[GlobalDataManager sharedGlobalDataManager] setCb:cbv];
+    
 	// Create the main window
 	window_ = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	
@@ -135,6 +161,43 @@
 	
 	// make main window visible
 	[window_ makeKeyAndVisible];
+    
+    
+    /*
+     * Stuff I've added
+     */
+    //data.plist init
+    NSString* path = [[NSBundle mainBundle] bundlePath];
+    NSString* finalPath = [path stringByAppendingPathComponent:@"Data.plist"];
+    NSDictionary* dataDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
+    
+    //data.plist reading
+    int totalCoins = [[dataDict valueForKey:@"coins"] intValue];
+    [[GlobalDataManager sharedGlobalDataManager] setTotalCoins:totalCoins];
+    
+    int continues = [[dataDict valueForKey:@"continues"] intValue];
+    [[GlobalDataManager sharedGlobalDataManager] setNumContinues:continues];
+    
+    int maxFuel = [[dataDict valueForKey:@"max fuel"] intValue];
+    [[GlobalDataManager sharedGlobalDataManager]setFuel:maxFuel];
+    [[GlobalDataManager sharedGlobalDataManager]setMaxFuel:maxFuel];
+    
+    //stats.plist init
+    path = [[NSBundle mainBundle] bundlePath];
+    finalPath =[path stringByAppendingPathComponent:@"Stats.plist"];
+    NSDictionary* statsDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
+    
+    //stats.plist reading
+    int highScore = [[statsDict valueForKey:@"high score"] intValue];
+    [[GlobalDataManager sharedGlobalDataManager] setHighScore: highScore];
+    
+    int totalGames = [[statsDict valueForKey:@"total games"] intValue];
+    [[GlobalDataManager sharedGlobalDataManager] setTotalGames:totalGames];
+    
+    int coins = [[statsDict valueForKey:@"coins collected"] intValue];
+    [[GlobalDataManager sharedGlobalDataManager] setTotalCoins:coins];
+    
+
 	
 	return YES;
 }
@@ -142,6 +205,13 @@
 // getting a call, pause the game
 -(void) applicationWillResignActive:(UIApplication *)application
 {
+    CCScene* scene = [[CCDirector sharedDirector] runningScene];
+    if (scene.tag == GAME_SCENE_TAG) {
+        Game* gameLayer = (Game*)[scene getChildByTag:GAME_LAYER_TAG];
+        [gameLayer pause:self];
+    }
+    
+    
 	if( [navController_ visibleViewController] == director_ )
 		[director_ pause];
 }
@@ -149,7 +219,7 @@
 // call got rejected
 -(void) applicationDidBecomeActive:(UIApplication *)application
 {
-	[[CCDirector sharedDirector] setNextDeltaTimeZero:YES];	
+	[[CCDirector sharedDirector] setNextDeltaTimeZero:YES];
 	if( [navController_ visibleViewController] == director_ )
 		[director_ resume];
 }
@@ -169,6 +239,7 @@
 // application will be killed
 - (void)applicationWillTerminate:(UIApplication *)application
 {
+    [VGVunglePub stop];
 	CC_DIRECTOR_END();
 }
 
@@ -186,9 +257,184 @@
 
 - (void) dealloc
 {
-	[window_ release];
+	/*[window_ release];
 	[navController_ release];
 	
-	[super dealloc];
+	[super dealloc];*/
 }
+
+
+
+
+
+/*
+ * Chartboost Delegate Methods
+ *
+ * Recommended for everyone: shouldDisplayInterstitial
+ */
+
+
+/*
+ * shouldDisplayInterstitial
+ *
+ * This is used to control when an interstitial should or should not be displayed
+ * The default is YES, and that will let an interstitial display as normal
+ * If it's not okay to display an interstitial, return NO
+ *
+ * For example: during gameplay, return NO.
+ *
+ * Is fired on:
+ * -Interstitial is loaded & ready to display
+ */
+
+- (BOOL)shouldDisplayInterstitial:(NSString *)location {
+    
+    // For example:
+    // if the user has left the main menu and is currently playing your game, return NO;
+    
+    if ([[CCDirector sharedDirector] runningScene].tag == MAIN_MENU_SCENE_TAG || [[CCDirector sharedDirector] runningScene].tag == GAME_ENDED_SCENE_TAG) {
+        NSLog(@"about to display interstitial at location %@", location);
+        
+        return YES;
+    }
+    
+    // Otherwise return NO to display the interstitial
+    NSLog(@"not going to display interstitial at location %@", location);
+    
+    return NO;
+}
+
+
+/*
+ * didFailToLoadInterstitial
+ *
+ * This is called when an interstitial has failed to load for any reason
+ *
+ * Is fired on:
+ * - No network connection
+ * - No publishing campaign matches for that user (go make a new one in the dashboard)
+ */
+
+- (void)didFailToLoadInterstitial:(NSString *)location {
+    NSLog(@"failure to load interstitial at location %@", location);
+    
+    // Show a house ad or do something else when a chartboost interstitial fails to load
+}
+
+
+/*
+ * didCacheInterstitial
+ *
+ * Passes in the location name that has successfully been cached.
+ *
+ * Is fired on:
+ * - All assets loaded
+ * - Triggered by cacheInterstitial
+ *
+ * Notes:
+ * - Similar to this is: cb.hasCachedInterstitial(String location)
+ * Which will return true if a cached interstitial exists for that location
+ */
+
+- (void)didCacheInterstitial:(NSString *)location {
+    NSLog(@"interstitial cached at location %@", location);
+    
+}
+
+/*
+ * didFailToLoadMoreApps
+ *
+ * This is called when the more apps page has failed to load for any reason
+ *
+ * Is fired on:
+ * - No network connection
+ * - No more apps page has been created (add a more apps page in the dashboard)
+ * - No publishing campaign matches for that user (add more campaigns to your more apps page)
+ *  -Find this inside the App > Edit page in the Chartboost dashboard
+ */
+
+- (void)didFailToLoadMoreApps {
+    NSLog(@"failure to load more apps");
+}
+
+
+/*
+ * didDismissInterstitial
+ *
+ * This is called when an interstitial is dismissed
+ *
+ * Is fired on:
+ * - Interstitial click
+ * - Interstitial close
+ *
+ * #Pro Tip: Use the delegate method below to immediately re-cache interstitials
+ */
+
+- (void)didDismissInterstitial:(NSString *)location {
+    NSLog(@"dismissed interstitial at location %@", location);
+    
+    [[Chartboost sharedChartboost] cacheInterstitial:location];
+}
+
+
+/*
+ * didDismissMoreApps
+ *
+ * This is called when the more apps page is dismissed
+ *
+ * Is fired on:
+ * - More Apps click
+ * - More Apps close
+ *
+ * #Pro Tip: Use the delegate method below to immediately re-cache the more apps page
+ */
+
+- (void)didDismissMoreApps {
+    NSLog(@"dismissed more apps page, re-caching now");
+    
+    [[Chartboost sharedChartboost] cacheMoreApps];
+}
+
+/*
+ * shouldRequestInterstitialsInFirstSession
+ *
+ * This sets logic to prevent interstitials from being displayed until the second startSession call
+ *
+ * The default is NO, meaning that it will always request & display interstitials.
+ * If your app displays interstitials before the first time the user plays the game, implement this method to return NO.
+ */
+
+- (BOOL)shouldRequestInterstitialsInFirstSession {
+    return NO;
+}
+
+
+
+
+-(void)vungleStart
+{
+    VGUserData*  data  = [VGUserData defaultUserData];
+    NSString*    appID = @"vungleTest";
+    
+    // set up config data
+    data.adOrientation   = VGAdOrientationPortrait;
+//    data.locationEnabled = TRUE;
+    
+    // start vungle publisher library
+    [VGVunglePub startWithPubAppID:appID userData:data];
+}
+
++(AppController*)appDelegate
+{
+    UIApplication*  uapp = [UIApplication sharedApplication];
+    AppController*    cntl = (AppController*) [uapp delegate];
+    
+    VG_ASSERT(VGIsKindOf(cntl, [AppDelegate class]));
+    
+    return cntl;
+}
+
+
+
+
 @end
