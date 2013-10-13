@@ -623,11 +623,8 @@
         
         [self addChild:obsLeft z:0 tag:numObsAdded];
         numObsAdded++;
-        [self addChild:obsRight z:0 tag:numObsAdded];
-        numObsAdded++;
         
-        lastObsAdded = obsRight;
-        
+        //adds obs to the middle of screen
         if ((i + 1 + 4) % 8 == 0) {
             Obstacles* obsMid = [Obstacles obstacle:@"obsticle.png"];
             obsMid.type = @"obstacle";
@@ -636,12 +633,32 @@
             
             [self addChild:obsMid z:0 tag:numObsAdded];
             numObsAdded++;
-            //lastObsAdded = obsMid;
         }
+        //makes the sides come out farther
         else if ((i + 1) % 8 == 0) {
             //todo: switch obsleft and obsright with larger obs
         }
+        
+        
+        [self addChild:obsRight z:0 tag:numObsAdded];
+        numObsAdded++;
+        
+        lastObsAdded = obsRight;
     }
+}
+
+-(void) addOneOpening:(int)loc{
+    Obstacles* obs1 = [Obstacles obstacle:@"obsticle.png"];
+    obs1.type = @"special obstacle 4";
+    Obstacles* obs2 = [Obstacles obstacle:@"obsticle.png"];
+    obs2.type = @"special obstacle 4";
+    Obstacles* obs3 = [Obstacles obstacle:@"obsticle.png"]; //make to be the smaller one
+    obs3.type = @"special obstacle 4";
+    Obstacles* obs4 = [Obstacles obstacle:@"obsticle.png"]; //make to be larger one. todo:
+    obs4.type = @"special obstacle 4";
+    
+    
+    
 }
 
 
@@ -956,6 +973,19 @@
 
             [self addChild:fuelCan];
         }
+    }
+    //if its supposed to be added too obs on the edges w/ obs in middle
+    else if ([obs.type isEqualToString:@"special obstacle 3"]) {
+        Obstacles* next = (Obstacles*)[self getChildByTag:obs.tag+1];
+        Obstacles* last = (Obstacles*)[self getChildByTag:obs.tag-1];
+
+        if ([next.type isEqualToString:@"obstacle"] || [last.type isEqualToString:@"obstacle"]) {
+            [self addFuelCan:next];
+            return;
+        }
+        
+        fuelCan.position = CGPointMake(winSize.width/2, obs.position.y);
+        [self addChild:fuelCan];
     }
     //randomly placed obs, coin
     else {
