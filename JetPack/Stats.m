@@ -26,7 +26,7 @@
     if( (self=[super init])) {
         CGSize winSize = [[CCDirector sharedDirector] winSize];
         
-        CCSprite* bg = [CCSprite spriteWithFile:@"background.png"];
+        CCSprite* bg = [CCSprite spriteWithFile:@"base background.png"];
         bg.anchorPoint = CGPointMake(0, 0);
         [self addChild:bg z:-10];
         

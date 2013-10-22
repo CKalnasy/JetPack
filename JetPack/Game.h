@@ -34,6 +34,8 @@
     BOOL didChangeLeftToRight;
         
     float numObsPerScreen;
+    int numPathedObsAdded;
+    int previousPathedObsLoc;
     
     CCLabelTTF* fuelLabel;
     

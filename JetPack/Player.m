@@ -11,7 +11,7 @@
 
 @implementation Player
 
-@synthesize isInvyEnabled, isDoublePointsEnabled, isBoostingEnabled, isFading, rect, fuel, maxFuel, isAPowerUpEnabled, velocity, acceleration;
+@synthesize isInvyEnabled, isDoublePointsEnabled, isBoostingEnabled, isFading, playerRect, jetpackRect, feetRect, fuel, maxFuel, isAPowerUpEnabled, velocity, acceleration;
 
 
 +(id) player:(NSString*)name
@@ -31,7 +31,7 @@
         isFading = NO;
         
         //makes the player rectangle
-        rect = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y - self.contentSize.height/2, /*self.contentSize.width*/ 18, self.contentSize.height);
+        playerRect = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y - self.contentSize.height/2, /*self.contentSize.width*/ 18, self.contentSize.height);
                     //there is a bunch of white space behind jeff now
         feetRect = CGRectMake(self.position.x - self.contentSize.width/2 + 3 , self.position.y - self.contentSize.height/2, 6, 4);
         //change when adding in actual player
@@ -52,13 +52,13 @@
         flameMedium = [CCSprite spriteWithFile:@"FlameMedium.png"];
         flameLarge = [CCSprite spriteWithFile:@"FlameLarge.png"];
         
-        flameSmall.position = CGPointMake(1.5, 4);
+        flameSmall.position = CGPointMake(self.contentSize.width, 4.5);
         flameSmall.visible = NO;
         [self addChild:flameSmall];
-        flameMedium.position = CGPointMake(1.5, 2);
+        flameMedium.position = CGPointMake(self.contentSize.width, 2.5);
         flameMedium.visible = NO;
         [self addChild:flameMedium];
-        flameLarge.position = CGPointMake(1.5, 1);
+        flameLarge.position = CGPointMake(self.contentSize.width, 1.5);
         flameLarge.visible = NO;
         [self addChild:flameLarge];
         
@@ -156,14 +156,31 @@
 }
 
 
--(CGRect) getRect{
-    rect = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y - self.contentSize.height/2, self.contentSize.width, self.contentSize.height);
+-(CGRect) playerRect{
+//    CGRect jetpackRect = CGRectMake(self.position.x - self.contentSize.width/2 + jetpack.position.x - jetpack.contentSize.width/2, self.position.y - self.contentSize.height/2 + jetpack.position.y - jetpack.contentSize.height/2, jetpack.contentSize.width, jetpack.contentSize.height);
+//    
+//    rect = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y - self.contentSize.height/2, self.contentSize.width, self.contentSize.height);
+//    
+//    CGRect ret = CGRectUnion(rect, jetpackRect);
+
+    CGRect ret = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y - self.contentSize.height/2, self.contentSize.width, self.contentSize.height);
     
-    return rect;
+    return ret;
+}
+
+-(CGRect) jetpackRect{
+    jetpackRect = CGRectMake(self.position.x - self.contentSize.width/2 + jetpack.position.x - jetpack.contentSize.width/2, self.position.y - self.contentSize.height/2 + jetpack.position.y - jetpack.contentSize.height/2, jetpack.contentSize.width, jetpack.contentSize.height);
+    
+    return jetpackRect;
 }
 
 -(CGRect) feetRect{
-    feetRect = CGRectMake(self.position.x - self.contentSize.width/2 + 3, self.position.y - self.contentSize.height/2, 6, 1);
+    //the entire feet
+    feetRect = CGRectMake(self.position.x - self.contentSize.width/2 + 6, self.position.y - self.contentSize.height/2, 10, 1);
+    
+    //half the width centered in the middle
+    feetRect.origin.x += feetRect.size.width/4.0;
+    feetRect.size.width /= 2;
     
     return feetRect;
 }

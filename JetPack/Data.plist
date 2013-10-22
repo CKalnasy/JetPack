@@ -10,5 +10,7 @@
 	<integer>400</integer>
 	<key>jetpack selected</key>
 	<string>Jet-Pack-one.png</string>
+	<key>clothes</key>
+	<string>Orange</string>
 </dict>
 </plist>

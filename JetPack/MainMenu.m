@@ -33,7 +33,15 @@
         [self addChild:bg z:-10];
         
         //player init
-        Player* player = [Player player:@"Jeff.png"];
+        NSString* path = [[NSBundle mainBundle] bundlePath];
+        NSString* finalPath = [path stringByAppendingPathComponent:@"Data.plist"];
+        NSDictionary* dataDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
+        
+        NSString* color = [dataDict valueForKey:@"clothes"];
+        NSString* name = [NSString stringWithFormat:@"%@%@%@", @"Jeff-", color, @".png"];
+        
+        
+        Player* player = [Player player:name];
         player.position = ccp(winSize.width/2, player.contentSize.height/2);
         [self addChild:player z:1];
         
@@ -51,10 +59,42 @@
         CCMenuItemImage *settings = [CCMenuItemImage itemWithNormalImage:@"Settings.png" selectedImage:@"Push-Settings.png" target:self selector:@selector(settings:)];
         
         
-        CCMenu *menu = [CCMenu menuWithItems:classic, timeTrial, leaderboards, store, stats, settings, nil];
-        [menu alignItemsVertically];
+        //CCMenu *menu = [CCMenu menuWithItems:classic, timeTrial, leaderboards, store, stats, settings, nil];
+        //[menu alignItemsVertically];
         
-        [self addChild:menu];
+        CCMenu* menuLeft = [CCMenu menuWithItems:classic, store, stats, nil];
+        
+        [menuLeft alignItemsVerticallyWithPadding:classic.contentSize.height*2];
+        menuLeft.position = CGPointMake(winSize.width/4, winSize.height*0.4 + classic.contentSize.height*1.5);
+        
+        [self addChild:menuLeft];
+        
+        
+        CCMenu* menuRight = [CCMenu menuWithItems:timeTrial, leaderboards, settings, nil];
+        
+        [menuRight alignItemsVerticallyWithPadding:timeTrial.contentSize.height*2];
+        menuRight.position = CGPointMake(winSize.width*3/4, winSize.height*0.4);
+        [self addChild:menuRight];
+        
+        
+//        CCMenu* menuStore = [CCMenu menuWithItems:store, nil];
+//        menuStore.position = CGPointMake(winSize.width/3, winSize.width/3);
+//        [self addChild:menuStore];
+//        
+//        
+//        CCMenu* menuStats = [CCMenu menuWithItems:stats, nil];
+//        menuStats.position = CGPointMake(winSize.width/3, winSize.width/3);
+//        [self addChild:menuStats];
+//        
+//        
+//        CCMenu* menuTimeTrial = [CCMenu menuWithItems:timeTrial, nil];
+//        menuTimeTrial.position = CGPointMake(winSize.width/3, winSize.width/3);
+//        [self addChild:menuTimeTrial];
+//        
+//        
+//        CCMenu* menuSettings = [CCMenu menuWithItems:settings, nil];
+//        menuSettings.position = CGPointMake(winSize.width/3, winSize.width/3);
+//        [self addChild:menuSettings];
     }
 	return self;
 }

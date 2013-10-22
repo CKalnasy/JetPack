@@ -14,7 +14,7 @@
     BOOL isDoublePointsEnabled;
     BOOL isBoostingEnabled;
     BOOL isFading;
-    CGRect rect;
+    CGRect playerRect;
     float fuel;
     int maxFuel;
     BOOL isAPowerUpEnabled;
@@ -31,19 +31,23 @@
     CGSize winSizeActual;
     
     CGRect feetRect;
+    CGRect jetpackRect;
     
     BOOL isFacingRight;
+    
+    CCArray* rects;
 }
 
 @property (nonatomic, readwrite) BOOL isInvyEnabled;
 @property (nonatomic, readwrite) BOOL isDoublePointsEnabled;
 @property (nonatomic, readwrite) BOOL isBoostingEnabled;
 @property (nonatomic, readwrite) BOOL isFading;
-@property (nonatomic, readonly) CGRect rect;
+@property (nonatomic, readonly) CGRect  playerRect;
+@property (nonatomic, readonly) CGRect  jetpackRect;
+@property (nonatomic, readonly) CGRect  feetRect;
 @property (nonatomic, readwrite) float fuel;
 @property (nonatomic, readwrite) int maxFuel;
 @property (nonatomic, readonly) BOOL isAPowerUpEnabled;
-@property (nonatomic, readonly) CGRect feetRect;
 @property (nonatomic, readwrite) CGPoint velocity;
 @property (nonatomic, readwrite) CGPoint acceleration;
 
@@ -68,8 +72,8 @@
 
 -(BOOL) getIsAPowerUpEnabled;
 
--(CGRect) getRect;
-
+-(CGRect) playerRect;
+-(CGRect) jetpackRect;
 -(CGRect) feetRect;
 
 -(CGPoint) velocity;

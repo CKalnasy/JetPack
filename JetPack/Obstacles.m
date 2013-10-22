@@ -10,7 +10,7 @@
 
 @implementation Obstacles
 
-@synthesize speed, type, rect;
+@synthesize speed, type, rect, bottomRect, middleRect;
 
 +(id) obstacle:(NSString*)name
 {
@@ -43,10 +43,23 @@
     type = _type;
 }
 
--(CGRect) getRect{
+-(CGRect) rect{
     rect = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y - self.contentSize.height/2, self.contentSize.width, self.contentSize.height);
     
     return rect;
 }
+
+-(CGRect) middleRect{
+    rect = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y, self.contentSize.width, 1);
+    
+    return rect;
+}
+
+-(CGRect) bottomRect{
+    rect = CGRectMake(self.position.x - self.contentSize.width/2 + 2, self.position.y - self.contentSize.height/2, self.contentSize.width - 4, self.contentSize.height);
+    
+    return rect;
+}
+
 
 @end
