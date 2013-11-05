@@ -40,6 +40,9 @@
     
     CCSprite* bgTransition;
     BOOL didTransition;
+    
+    CCSprite* fuelInner;
+    CCSprite* fuelOuter;
 }
 
 +(CCScene*) scene;

@@ -22,6 +22,7 @@
 #define MAX_OBS_PER_SCREEN 5
 #define SCORE_MODIFIER 64
 
+#define MAX_HEIGHT ([[UIScreen mainScreen] bounds].size.height) - 375
 
 @interface Game : CCLayer {
     CGSize winSize;
@@ -45,18 +46,23 @@
     
     int scoreActual;
     int scoreRaw;
+    int numOfDoublePoints;
     
     Obstacles* firstObs;
     int highestPlayerPosition;
     int diffFirstObsAnd0;
     
     CGPoint horizontalVelocity;
+    int diffCenterObsAndPlayer;
+    BOOL isTouchingHorizObs;
+    Obstacles* horizObsLandedOn;
     
     int numCoins;
     //int numCoinsAdded;
     //int numCoinsDeleted;
     
     CCSprite* innerPowerUpBar;
+    CGRect innerPowerUpBarRect;
     int numSecondsPowerUp;
     BOOL didAlreadyMakePowerUpBarSmaller;
     
@@ -80,6 +86,7 @@
     int numFuelCansAddedBeforeDoubled;
     int numFuelCansAddedAfterDoubled;
     CCSprite* innerFuelBar;
+    CGRect innerFuelBarRect;
     BOOL didAlreadyMakeFuelBarSmaller;
     
     CCSprite* pause;
@@ -93,6 +100,7 @@
     NSArray* powerUpHigh;
     int powerUpDifferenceLate;
     int numPowerUpsAdded;
+    int lastPowerUpEndOrLoc;
     
     BOOL isGameRunning;
     

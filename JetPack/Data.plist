@@ -12,5 +12,11 @@
 	<string>Jet-Pack-one.png</string>
 	<key>clothes</key>
 	<string>Orange</string>
+	<key>max seconds double points</key>
+	<integer>5</integer>
+	<key>max seconds invy</key>
+	<integer>5</integer>
+	<key>max seconds boost</key>
+	<integer>5</integer>
 </dict>
 </plist>

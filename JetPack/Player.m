@@ -55,10 +55,10 @@
         flameSmall.position = CGPointMake(self.contentSize.width, 4.5);
         flameSmall.visible = NO;
         [self addChild:flameSmall];
-        flameMedium.position = CGPointMake(self.contentSize.width, 2.5);
+        flameMedium.position = CGPointMake(self.contentSize.width, 3);
         flameMedium.visible = NO;
         [self addChild:flameMedium];
-        flameLarge.position = CGPointMake(self.contentSize.width, 1.5);
+        flameLarge.position = CGPointMake(self.contentSize.width, 2);
         flameLarge.visible = NO;
         [self addChild:flameLarge];
         

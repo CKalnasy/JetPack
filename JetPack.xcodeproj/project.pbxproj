@@ -58,10 +58,10 @@
 		3E0A8F59180CF8ED00294D8F /* obsticle3.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E0A8F22180CF8ED00294D8F /* obsticle3.png */; };
 		3E0A8F5A180CF8ED00294D8F /* PU-boarder.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E0A8F24180CF8ED00294D8F /* PU-boarder.png */; };
 		3E0A8F5B180CF8ED00294D8F /* PU-inner-bar.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E0A8F25180CF8ED00294D8F /* PU-inner-bar.png */; };
-		3E0A8F5C180CF8ED00294D8F /* 1_2.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E0A8F28180CF8ED00294D8F /* 1_2.png */; };
+		3E0A8F5C180CF8ED00294D8F /* 2_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E0A8F28180CF8ED00294D8F /* 2_4.png */; };
 		3E0A8F5D180CF8ED00294D8F /* 1_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E0A8F29180CF8ED00294D8F /* 1_4.png */; };
 		3E0A8F5E180CF8ED00294D8F /* 3_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E0A8F2A180CF8ED00294D8F /* 3_4.png */; };
-		3E0A8F5F180CF8ED00294D8F /* Full.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E0A8F2B180CF8ED00294D8F /* Full.png */; };
+		3E0A8F5F180CF8ED00294D8F /* 4_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E0A8F2B180CF8ED00294D8F /* 4_4.png */; };
 		3E24C4C417E15650001D84B7 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E24C4C317E15650001D84B7 /* CFNetwork.framework */; };
 		3E24C4C617E1565B001D84B7 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E24C4C517E1565B001D84B7 /* CoreMedia.framework */; };
 		3E24C4C817E1566D001D84B7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E24C4C717E1566D001D84B7 /* libz.dylib */; };
@@ -314,10 +314,10 @@
 		3E0A8F22180CF8ED00294D8F /* obsticle3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = obsticle3.png; sourceTree = "<group>"; };
 		3E0A8F24180CF8ED00294D8F /* PU-boarder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PU-boarder.png"; sourceTree = "<group>"; };
 		3E0A8F25180CF8ED00294D8F /* PU-inner-bar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PU-inner-bar.png"; sourceTree = "<group>"; };
-		3E0A8F28180CF8ED00294D8F /* 1_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 1_2.png; sourceTree = "<group>"; };
+		3E0A8F28180CF8ED00294D8F /* 2_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 2_4.png; sourceTree = "<group>"; };
 		3E0A8F29180CF8ED00294D8F /* 1_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 1_4.png; sourceTree = "<group>"; };
 		3E0A8F2A180CF8ED00294D8F /* 3_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 3_4.png; sourceTree = "<group>"; };
-		3E0A8F2B180CF8ED00294D8F /* Full.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Full.png; sourceTree = "<group>"; };
+		3E0A8F2B180CF8ED00294D8F /* 4_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 4_4.png; sourceTree = "<group>"; };
 		3E24C4C317E15650001D84B7 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		3E24C4C517E1565B001D84B7 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		3E24C4C717E1566D001D84B7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -854,10 +854,10 @@
 		3E0A8F27180CF8ED00294D8F /* Store progress bar */ = {
 			isa = PBXGroup;
 			children = (
-				3E0A8F28180CF8ED00294D8F /* 1_2.png */,
 				3E0A8F29180CF8ED00294D8F /* 1_4.png */,
+				3E0A8F28180CF8ED00294D8F /* 2_4.png */,
 				3E0A8F2A180CF8ED00294D8F /* 3_4.png */,
-				3E0A8F2B180CF8ED00294D8F /* Full.png */,
+				3E0A8F2B180CF8ED00294D8F /* 4_4.png */,
 			);
 			path = "Store progress bar";
 			sourceTree = "<group>";
@@ -1529,10 +1529,10 @@
 				3E0A8F35180CF8ED00294D8F /* Push-Classic.png in Resources */,
 				3E0A8F3D180CF8ED00294D8F /* Coin3.png in Resources */,
 				3E0A8F2D180CF8ED00294D8F /* DoublePoints.png in Resources */,
-				3E0A8F5F180CF8ED00294D8F /* Full.png in Resources */,
+				3E0A8F5F180CF8ED00294D8F /* 4_4.png in Resources */,
 				3E0A8F37180CF8ED00294D8F /* Push-Settings.png in Resources */,
 				3E0A8F58180CF8ED00294D8F /* obsticle2.png in Resources */,
-				3E0A8F5C180CF8ED00294D8F /* 1_2.png in Resources */,
+				3E0A8F5C180CF8ED00294D8F /* 2_4.png in Resources */,
 				3E0A8F5B180CF8ED00294D8F /* PU-inner-bar.png in Resources */,
 				3E0A8F45180CF8ED00294D8F /* Fuel-tank.png in Resources */,
 				3E24C50B17E159D7001D84B7 /* bootstrap.css in Resources */,

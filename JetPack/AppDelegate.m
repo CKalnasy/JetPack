@@ -87,8 +87,7 @@
     
 	// Create the main window
 	window_ = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-	
-	
+    
 	// CCGLView creation
 	// viewWithFrame: size of the OpenGL view. For full screen use [_window bounds]
 	//  - Possible values: any CGRect
@@ -198,6 +197,7 @@
     [[GlobalDataManager sharedGlobalDataManager] setTotalCoins:coins];
     
 
+    //[glView setMultipleTouchEnabled:YES];
 	
 	return YES;
 }
