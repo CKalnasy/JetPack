@@ -55,5 +55,12 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Orbitron Light.ttf</string>
+		<string>Orbitron Medium.ttf</string>
+		<string>Orbitron Black.ttf</string>
+		<string>Orbitron Bold.ttf</string>
+	</array>
 </dict>
 </plist>

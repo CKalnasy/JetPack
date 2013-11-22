@@ -10,7 +10,7 @@
 
 @implementation Obstacles
 
-@synthesize speed, type, rect, bottomRect, middleRect;
+@synthesize speed, type, rect, bottomRect, middleRect, coinStage;
 
 +(id) obstacle:(NSString*)name
 {
@@ -59,6 +59,18 @@
     rect = CGRectMake(self.position.x - self.contentSize.width/2 + 2, self.position.y - self.contentSize.height/2, self.contentSize.width - 4, self.contentSize.height);
     
     return rect;
+}
+
+-(int) coinStage {
+    return coinStage;
+}
+-(void) incrementCoinStage {
+    if (coinStage == 5) {
+        coinStage = 1;
+    }
+    else {
+        coinStage++;
+    }
 }
 
 

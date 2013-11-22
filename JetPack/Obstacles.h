@@ -15,6 +15,8 @@
     CGRect rect;
     CGRect bottomRect;
     CGRect middleRect;
+    
+    int coinStage;
 }
 
 @property (nonatomic, readwrite) float speed;
@@ -22,6 +24,7 @@
 @property (nonatomic, readwrite) CGRect rect;
 @property (nonatomic, readwrite) CGRect bottomRect;
 @property (nonatomic, readwrite) CGRect middleRect;
+@property (nonatomic, readwrite) int coinStage;
 
 +(id) obstacle:(NSString*)name;
 -(id) initWithObstacle:(NSString*)name;
@@ -32,5 +35,7 @@
 -(CGRect) rect;
 -(CGRect) bottomRect;
 -(CGRect) middleRect;
+-(int) coinStage;
+-(void) incrementCoinStage;
 
 @end

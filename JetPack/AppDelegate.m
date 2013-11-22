@@ -14,6 +14,8 @@
 #import <RevMobAds/RevMobAds.h>
 #import "Chartboost.h"
 #import "GameEnded.h"
+#import "MoreCoins.h"
+#import "vunglepub.h"
 
 
 @implementation MyNavigationController
@@ -60,6 +62,8 @@
 @interface AppController () <ChartboostDelegate>
 @end
 
+@interface AppController () <VGVunglePubDelegate>
+@end
 
 
 @implementation AppController 
@@ -76,14 +80,23 @@
     [RevMobAds session].testingMode = RevMobAdsTestingModeWithAds;
     
     [self vungleStart];
+    [VGVunglePub setDelegate:self];
     
     Chartboost* cbv = [GlobalDataManager sharedGlobalDataManager].cb;
     cbv = [Chartboost sharedChartboost];
     cbv.appId = @"522e7eb717ba477e16000009";
     cbv.appSignature = @"3ffe2184c225347db82fd1e9339e2bc30a299cc2";
+    cbv.delegate = self;
     
     [cbv startSession];
     [[GlobalDataManager sharedGlobalDataManager] setCb:cbv];
+    
+    
+    //cache ads (Vungle does this automatically)
+    [[Chartboost sharedChartboost] cacheInterstitial:@"After Game Ended"];
+    
+    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+    [ad loadAd];
     
 	// Create the main window
 	window_ = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -173,10 +186,7 @@
     //data.plist reading
     int totalCoins = [[dataDict valueForKey:@"coins"] intValue];
     [[GlobalDataManager sharedGlobalDataManager] setTotalCoins:totalCoins];
-    
-    int continues = [[dataDict valueForKey:@"continues"] intValue];
-    [[GlobalDataManager sharedGlobalDataManager] setNumContinues:continues];
-    
+        
     int maxFuel = [[dataDict valueForKey:@"max fuel"] intValue];
     [[GlobalDataManager sharedGlobalDataManager]setFuel:maxFuel];
     [[GlobalDataManager sharedGlobalDataManager]setMaxFuel:maxFuel];
@@ -197,7 +207,7 @@
     [[GlobalDataManager sharedGlobalDataManager] setTotalCoins:coins];
     
 
-    //[glView setMultipleTouchEnabled:YES];
+    [glView setMultipleTouchEnabled:YES];
 	
 	return YES;
 }
@@ -292,14 +302,32 @@
     // For example:
     // if the user has left the main menu and is currently playing your game, return NO;
     
-    if ([[CCDirector sharedDirector] runningScene].tag == MAIN_MENU_SCENE_TAG || [[CCDirector sharedDirector] runningScene].tag == GAME_ENDED_SCENE_TAG) {
-        NSLog(@"about to display interstitial at location %@", location);
+    CCScene* s = [[CCDirector sharedDirector] runningScene];
+    if (s.tag == GAME_SCENE_TAG) {
+        Game* g = (Game*)[s getChildByTag:GAME_LAYER_TAG];
         
-        return YES;
+        if (g.isGameOver) {
+            NSLog(@"about to display interstitial at location %@", location);
+        
+            return YES;
+        }
     }
     
     // Otherwise return NO to display the interstitial
     NSLog(@"not going to display interstitial at location %@", location);
+    
+    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+    [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
+        [fs showAd];
+        NSLog(@"Ad loaded");
+    } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
+        NSLog(@"Ad error: %@",error);
+        //attempt to fill with other ad network here
+    } onClickHandler:^{
+        NSLog(@"Ad clicked");
+    } onCloseHandler:^{
+        NSLog(@"Ad closed");
+    }];
     
     return NO;
 }
@@ -418,7 +446,7 @@
     
     // set up config data
     data.adOrientation   = VGAdOrientationPortrait;
-//    data.locationEnabled = TRUE;
+    data.locationEnabled = TRUE;
     
     // start vungle publisher library
     [VGVunglePub startWithPubAppID:appID userData:data];
@@ -434,6 +462,38 @@
     return cntl;
 }
 
+- (void)vungleMoviePlayed:(VGPlayData*)playData{
+    if ([playData playedFull]) {
+        MoreCoins* scene = (MoreCoins*)[[[CCDirector sharedDirector] runningScene] getChildByTag:MORE_COINS_LAYER_TAG];
+        
+        scene.didWatchAd = YES;
+    }
+}
+
+- (void)vungleViewDidDisappear:(UIViewController*)viewController {
+    MoreCoins* scene = (MoreCoins*)[[[CCDirector sharedDirector] runningScene] getChildByTag:MORE_COINS_LAYER_TAG];
+    
+    if (scene.didWatchAd) {
+        [scene adClosed];
+    }
+}
+
+
+
+
++(UIImage*) screenshotWithStartNode:(CCNode*)startNode {
+    [CCDirector sharedDirector].nextDeltaTimeZero = YES;
+    
+    CGSize winSize = [CCDirector sharedDirector].winSize;
+    CCRenderTexture* rtx =
+    [CCRenderTexture renderTextureWithWidth:winSize.width
+                                     height:winSize.height];
+    [rtx begin];
+    [startNode visit];
+    [rtx end];
+    
+    return [rtx getUIImage];
+}
 
 
 

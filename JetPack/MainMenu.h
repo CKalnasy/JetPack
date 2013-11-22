@@ -23,6 +23,5 @@
 -(void) stats:(id)sender;
 -(void) store:(id)sender;
 -(void) timeTrial:(id)sender;
--(void) freeCoins:(id)sender;
 
 @end

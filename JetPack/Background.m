@@ -13,6 +13,8 @@
 
 @implementation Background
 
+@synthesize scoreLabel, coinsLabel;
+
 +(CCScene *) scene
 {
 	CCScene *scene = [CCScene node];
@@ -29,9 +31,6 @@
         winSizeThreeInch = CGSizeMake(320, 480);
         winSizeFourInch = CGSizeMake(320, 568);
         
-//        CCLayerColor* green = [CCLayerColor layerWithColor:ccc4(ccGREEN.r, ccGREEN.g, ccGREEN.b, 255)];
-//        [self addChild:green z:-1000];
-        
         //background scrolling order
         backgroundOrder = [CCArray arrayWithCapacity:6];
         for (int i = 0; i < [backgroundOrder capacity]; i++) {
@@ -44,15 +43,16 @@
         
         //add the background sprites
         bg1 = [CCSprite spriteWithFile:@"base background.png"];
-        //bg1.anchorPoint = CGPointMake(0, 0);
-        bg1.position = CGPointMake(bg1.contentSize.width/2, bg1.contentSize.height/2);
+        bg1.anchorPoint = CGPointMake(0.5, 0);
+        //bg1.position = CGPointMake(bg1.contentSize.width/2, bg1.contentSize.height/2);
+        bg1.position = CGPointMake(bg1.contentSize.width/2, 0);
         [self addChild:bg1 z:-10];
         
         NSString* name =[NSString stringWithFormat:@"%d.png",[[backgroundOrder objectAtIndex:0] intValue]];
         [backgroundOrder removeObjectAtIndex:0];
         
         bg2 = [CCSprite spriteWithFile:name];
-        //bg2.anchorPoint = CGPointMake(0, 0);
+        bg2.anchorPoint = CGPointMake(0.5, 0);
         bg2.position = CGPointMake(bg2.contentSize.width/2, bg1.position.y + bg1.contentSize.height);
         [self addChild:bg2 z:-10];
         
@@ -60,28 +60,19 @@
         backgroundScrollSpeed = CGPointMake(0, 5);
         
         
-        //shows the word "score"
-        wordScore = [CCLabelTTF labelWithString:@"SCORE" fontName:@"arial" fontSize:20];
-        
-        //positions the word 10 pixels away from the corner
-        wordScore.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - winSizeThreeInch.width/24);
-        
-        //[wordScore enableStrokeWithColor:ccWHITE size:1 updateImage:YES];
-        //CCRenderTexture* myStroke = [self createStroke:wordScore size:90 color:ccBLACK];
-        //[wordScore addChild:myStroke z:-1];
-        
-        //[self addChild:wordScore];
-                
         //shows the score
-        NSString* s = [NSString stringWithFormat:@"%09d",0];
-        scoreLabel = [CCLabelTTF labelWithString:s fontName:@"arial" fontSize:24];
+        NSString* s = [NSString stringWithFormat:@"%05d",0];
+        scoreLabel = [CCLabelTTF labelWithString:s fontName:@"Orbitron-Light" fontSize:20];
 		scoreLabel.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - winSizeThreeInch.height/20);
-        [self addChild:scoreLabel];
-
+        [self addChild:scoreLabel z:1];
+        
+        stroke = [self createStroke:scoreLabel size:0.5 color:ccBLACK];
+        stroke.position = scoreLabel.position;
+        [self addChild:stroke z:0];
         
         //shows the coins
-        coinsLabel = [CCLabelTTF labelWithString:@"0" fontName:@"arial" fontSize:24];
-		coinsLabel.position = CGPointMake(winSizeActual.width - winSizeActual.width/32, winSizeActual.height);
+        coinsLabel = [CCLabelTTF labelWithString:@"0" fontName:@"Orbitron-Light" fontSize:24];
+		coinsLabel.position = CGPointMake(winSizeActual.width - winSizeActual.width/20, winSizeActual.height);
 		// Adjust the label's anchorPoint's y position to make it align with the top.
 		coinsLabel.anchorPoint = CGPointMake(1,1);
         [self addChild:coinsLabel];
@@ -92,19 +83,6 @@
         fuelLabel.position = CGPointMake(winSizeActual.width - winSizeActual.width/32, winSizeActual.height - 50);
         fuelLabel.anchorPoint = CGPointMake(1, 1);
         [self addChild:fuelLabel];
-        
-        
-
-        fuelOuter = [CCSprite spriteWithFile:@"fuel-boarder.png" rect:CGRectMake(10, winSizeActual.height - winSizeThreeInch.height/20, fuelOuter.contentSize.width, fuelOuter.contentSize.height)];
-        fuelOuter.anchorPoint = CGPointMake(0, 0.5);
-        fuelOuter.position = CGPointMake(10, winSizeActual.height - winSizeThreeInch.height/20);
-        
-        [self addChild:fuelOuter];
-        
-        fuelInner = [CCSprite spriteWithFile:@"fuel-inner-bar.png"];
-        //fuelInner.anchorPoint = CGPointMake(0, 0.5);
-        //fuelInner.position = CGPointMake(12, winSizeActual.height - winSizeThreeInch.height/20);
-
         
         
         
@@ -125,12 +103,18 @@
         scoreActual = [[GlobalDataManager sharedGlobalDataManager] scoreActual];
         
         NSString* scoreString = [NSString stringWithFormat:@"%i",scoreActual];
-        int zeros = 9 - scoreString.length;
+        int zeros = 5 - scoreString.length;
         for (int i = 0; i < zeros; i++) {
             scoreString = [@"0" stringByAppendingString:scoreString];
         }
         
         [scoreLabel setString: scoreString];
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:scoreLabel size:0.5 color:ccBLACK];
+        stroke.position = scoreLabel.position;
+        [self addChild:stroke];
         
         scoreRaw = [[GlobalDataManager sharedGlobalDataManager] scoreRaw];
     }
@@ -157,14 +141,16 @@
     //if its still in the atmosphere (clouds)
     if ([backgroundOrder count] > 0) {
         //if the background top is at the bottom of the screen
-        if (bg1.position.y <= -bg1.contentSize.height/2) {
+        //if (bg1.position.y <= -bg1.contentSize.height/2) {
+        if (bg1.position.y <= -bg1.contentSize.height) {
             NSString* name = [NSString stringWithFormat:@"%d.png", [[backgroundOrder objectAtIndex:0] intValue]];
             [backgroundOrder removeObjectAtIndex:0];
         
             [bg1 setTexture:[[CCSprite spriteWithFile:name]texture]];
             bg1.position = CGPointMake(bg2.contentSize.width/2, bg2.position.y + bg2.contentSize.height);
         }
-        else if (bg2.position.y <= -bg2.contentSize.height/2) {
+        //else if (bg2.position.y <= -bg2.contentSize.height/2) {
+        else if (bg2.position.y <= -bg2.contentSize.height) {
             NSString* name =[NSString stringWithFormat:@"%d.png",[[backgroundOrder objectAtIndex:0] intValue]];
             [backgroundOrder removeObjectAtIndex:0];
         
@@ -173,26 +159,31 @@
         }
     }
     //adds transition background
-    if ([backgroundOrder count] <= 0 && !didTransition && bg2.position.y <= -bg2.contentSize.height/2) {
+    //if ([backgroundOrder count] <= 0 && !didTransition && bg2.position.y <= -bg2.contentSize.height/2) {
+    if ([backgroundOrder count] <= 0 && !didTransition && bg2.position.y <= -bg2.contentSize.height) {
         bgTransition = [CCSprite spriteWithFile:@"transition.png"];
-        //bgTransition.anchorPoint = CGPointMake(0, 0);
-        bgTransition.position = CGPointMake(bgTransition.contentSize.width/2, bgTransition.contentSize.height/4 + bg1.position.y + bg1.contentSize.height);
+        bgTransition.anchorPoint = CGPointMake(0.5, 0);
+        //bgTransition.position = CGPointMake(bgTransition.contentSize.width/2, bgTransition.contentSize.height/4 + bg1.position.y + bg1.contentSize.height);
+        bgTransition.position = CGPointMake(bgTransition.contentSize.width/2, bg1.position.y + bg1.contentSize.height);
         [self addChild:bgTransition z:-10];
         
         [bg2 setTexture:[[CCSprite spriteWithFile:@"stars.png"]texture]];
-        bg2.position = CGPointMake(bg2.contentSize.width/2, bgTransition.position.y + bgTransition.contentSize.height*3/4);
+        //bg2.position = CGPointMake(bg2.contentSize.width/2, bgTransition.position.y + bgTransition.contentSize.height*3/4);
+        bg2.position = CGPointMake(bg2.contentSize.width/2, bgTransition.position.y + bgTransition.contentSize.height);
             
         didTransition = YES;
     }
     
     //space!!!
     if (didTransition) {
-        if (bgTransition.isRunning && bgTransition.position.y <= -bgTransition.contentSize.height/2) {
+        //if (bgTransition.isRunning && bgTransition.position.y <= -bgTransition.contentSize.height/2) {
+        if (bgTransition.isRunning && bgTransition.position.y <= -bgTransition.contentSize.height) {
             [self removeChild:bgTransition];
         }
         
         //loops through stars backgrounds
-        if (!bgTransition.isRunning && bg1.position.y <= -bg1.contentSize.height/2) {
+        //if (!bgTransition.isRunning && bg1.position.y <= -bg1.contentSize.height/2) {
+        if (!bgTransition.isRunning && bg1.position.y <= -bg1.contentSize.height) {
             //reset any flippin of x and y
             bg1.scaleX = 1;
             bg1.scaleY = 1;
@@ -212,10 +203,10 @@
                 bg1.scaleX = -1;
             }
             
-            
             bg1.position = CGPointMake(bg1.contentSize.width/2, bg2.position.y + bg2.contentSize.height);
         }
-        else if (!bgTransition.isRunning && bg2.position.y <= -bg2.contentSize.height/2) {
+        //else if (!bgTransition.isRunning && bg2.position.y <= -bg2.contentSize.height/2) {
+        else if (!bgTransition.isRunning && bg2.position.y <= -bg2.contentSize.height) {
             //reset any flippin of x and y
             bg2.scaleX = 1;
             bg2.scaleY = 1;
@@ -283,38 +274,12 @@
             backgroundScrollSpeed.y = MIN_SCROLLING_SPEED_SPACE;
         }
     }
-    
-    fuelInner.position = CGPointMake(fuelInner.position.x - 0.05, fuelInner.position.y);
 }
 
 
 
 
-- (CCSprite *)maskedSpriteWithSprite:(CCSprite *)textureSprite maskSprite:(CCSprite *)maskSprite {
-    
-    // 1
-    CCRenderTexture * rt = [CCRenderTexture renderTextureWithWidth:maskSprite.contentSize.width height:maskSprite.contentSize.height];
-    
-    // 2
-    maskSprite.position = ccp(maskSprite.contentSize.width/2, maskSprite.contentSize.height/2);
-    textureSprite.position = ccp(textureSprite.contentSize.width/2, textureSprite.contentSize.height/2);
-    
-    // 3
-    [maskSprite setBlendFunc:(ccBlendFunc){GL_ONE, GL_ZERO}];
-    [textureSprite setBlendFunc:(ccBlendFunc){GL_DST_ALPHA, GL_ZERO}];
-    
-    // 4
-    [rt begin];
-    [maskSprite visit];
-    [textureSprite visit];
-    [rt end];
-    
-    // 5
-    CCSprite *retval = [CCSprite spriteWithTexture:rt.sprite.texture];
-    retval.flipY = YES;
-    return retval;
-    
-}
+
 
 
 -(CCRenderTexture*) createStroke: (CCLabelTTF*) label   size:(float)size   color:(ccColor3B)cor

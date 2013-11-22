@@ -31,6 +31,7 @@
     CCLabelTTF* wordScore;
     CCLabelTTF* coinsLabel;
     CCLabelTTF* fuelLabel;
+    CCRenderTexture* stroke;
     
     CGPoint playerVelocity;
     CGPoint backgroundScrollSpeed;
@@ -40,10 +41,10 @@
     
     CCSprite* bgTransition;
     BOOL didTransition;
-    
-    CCSprite* fuelInner;
-    CCSprite* fuelOuter;
 }
+
+@property (nonatomic, readwrite) CCLabelTTF* scoreLabel;
+@property (nonatomic, readwrite) CCLabelTTF* coinsLabel;
 
 +(CCScene*) scene;
 -(id) init;

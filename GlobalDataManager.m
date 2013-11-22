@@ -10,7 +10,7 @@
 
 
  @implementation GlobalDataManager
-@synthesize scoreRaw, scoreActual, fuel, numCoins, totalCoins, totalGames, highScore, numContinues, cb, player, isPaused, maxFuel;
+@synthesize scoreRaw, scoreActual, fuel, numCoins, totalCoins, totalGames, highScore, cb, player, isPaused, maxFuel, playerColor;
 
 static GlobalDataManager *sharedGlobalDataManager = nil;
 
@@ -100,19 +100,6 @@ static GlobalDataManager *sharedGlobalDataManager = nil;
     [dataDict setValue:[NSNumber numberWithInt:num] forKey:@"high score"];
 }
 
-+(int) numContinues{
-    return [GlobalDataManager sharedGlobalDataManager].numContinues;
-}
-+(void) setNumContinues: (int)num{
-    [GlobalDataManager sharedGlobalDataManager].numContinues = num;
-    
-    //data.plist init
-    NSString* path = [[NSBundle mainBundle] bundlePath];
-    NSString* finalPath = [path stringByAppendingPathComponent:@"Data.plist"];
-    NSDictionary* dataDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
-    
-    [dataDict setValue:[NSNumber numberWithInt:num] forKey:@"continues"];
-}
 
 +(Chartboost*) cb{
     return [GlobalDataManager sharedGlobalDataManager].cb;
@@ -135,7 +122,17 @@ static GlobalDataManager *sharedGlobalDataManager = nil;
     [GlobalDataManager sharedGlobalDataManager].isPaused = _isPaused;
 }
 
-
++(NSString*) playerColor {
+    //data.plist init
+    NSString* path = [[NSBundle mainBundle] bundlePath];
+    NSString* finalPath = [path stringByAppendingPathComponent:@"Data.plist"];
+    NSDictionary* dataDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
+    
+    NSString* color = [[dataDict objectForKey:@"clothes"] stringValue];
+    [GlobalDataManager sharedGlobalDataManager].playerColor = color;
+    
+    return color;
+}
 
 - (void) dealloc
 {

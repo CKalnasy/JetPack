@@ -45,13 +45,15 @@
 /*                                                                            */
 /******************************************************************************/
 
-@protocol VGVunglePubDelegate
+@protocol VGVunglePubDelegate <NSObject>
 @optional
--(void)vungleMoviePlayed:(VGPlayData*)playData;
--(void)vungleStatusUpdate:(VGStatusData*)statusData;
--(void)vungleViewDidDisappear:(UIViewController*)viewController;
--(void)vungleViewWillAppear:(UIViewController*)viewController;
--(void)vungleAppStoreViewDidDisappear;
+- (void)vungleMoviePlayed:(VGPlayData*)playData;
+- (void)vungleStatusUpdate:(VGStatusData*)statusData;
+- (void)vungleViewDidDisappear:(UIViewController*)viewController;
+- (void)vungleViewDidDisappear:(UIViewController*)viewController willShowProductView:(BOOL)willShow;
+- (void)vungleViewWillAppear:(UIViewController*)viewController;
+- (void)vungleAppStoreWillAppear;
+- (void)vungleAppStoreViewDidDisappear;
 @end
 
 typedef  id<VGVunglePubDelegate>  VGVungleDelegate;

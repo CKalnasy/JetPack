@@ -14,6 +14,7 @@
 
 #define GAME_LAYER_TAG 0
 #define GAME_SCENE_TAG 1
+#define BACKGROUND_LAYER_TAG 5
 #define MAX_VELOCITY 6.8
 #define FUEL_CONSTANT 4.65116
 #define FUEL_CANS_BEFORE_MAX 13
@@ -21,6 +22,8 @@
 #define NUM_FUEL_CANS_DOUBLED_UP 5
 #define MAX_OBS_PER_SCREEN 5
 #define SCORE_MODIFIER 64
+#define MONEY_BAG_VALUE 10
+#define COINS_TO_CONTINUE 2000 //will want to change this
 
 #define MAX_HEIGHT ([[UIScreen mainScreen] bounds].size.height) - 375
 
@@ -29,6 +32,7 @@
     CGSize winSizeActual;
     
     Player* player;
+    //Player* angledFeetPlayer;
     
     float previousAcc; //use these to flip the player
     int posBeforeFlip;
@@ -57,10 +61,12 @@
     BOOL isTouchingHorizObs;
     Obstacles* horizObsLandedOn;
     
+    CCArray* coinLoc;
     int numCoins;
-    //int numCoinsAdded;
-    //int numCoinsDeleted;
+    int coinRand;
+    int numFewCoinsAdded;
     
+    CCSprite* outerPowerUpBar;
     CCSprite* innerPowerUpBar;
     CGRect innerPowerUpBarRect;
     int numSecondsPowerUp;
@@ -78,7 +84,6 @@
     int numDoubles;
     int maxNumSecondsDouble;
     
-    int numContinuesLeft;
     int numContinuesUsed;
     
     PowerUp* fuelCan;
@@ -88,6 +93,7 @@
     CCSprite* innerFuelBar;
     CGRect innerFuelBarRect;
     BOOL didAlreadyMakeFuelBarSmaller;
+    BOOL didRunOutOfFuel;
     
     CCSprite* pause;
     BOOL isMenuUp;
@@ -95,6 +101,7 @@
     
     CCMenu* continueMenu;
     BOOL hasGameBegun;
+    BOOL isGameOver;
     
     NSArray* powerUpLow;
     NSArray* powerUpHigh;
@@ -103,10 +110,12 @@
     int lastPowerUpEndOrLoc;
     
     BOOL isGameRunning;
+    BOOL doDetectCollisions;
     
     BOOL added;
 }
 
+@property (nonatomic, readwrite) BOOL isGameOver;
 
 +(CCScene*) scene;
 

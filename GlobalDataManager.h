@@ -22,10 +22,10 @@
     int totalCoins;
     int totalGames;
     int highScore;
-    int numContinues;
     CGPoint playerVelocity;
     Player* player;
     BOOL isPaused;
+    NSString* playerColor;
     
     Chartboost* cb;
 }
@@ -37,11 +37,11 @@
 @property (nonatomic, readwrite) int totalCoins;
 @property (nonatomic, readwrite) int totalGames;
 @property (nonatomic, readwrite) int highScore;
-@property (nonatomic, readwrite) int numContinues;
 @property (nonatomic, readwrite) Chartboost* cb;
 @property (nonatomic, readwrite) Player* player;
 @property (nonatomic, readwrite) BOOL isPaused;
 @property (nonatomic, readwrite) int maxFuel;
+@property (nonatomic, readwrite) NSString* playerColor;
 
 
 
@@ -71,9 +71,6 @@
 +(int) highScore;
 +(void) setHighScore: (int)num;
 
-+(int) numContinues;
-+(void) setNumContinues: (int)num;
-
 +(Chartboost*) cb;
 +(void) setCB: (Chartboost*)cbv;
 
@@ -82,5 +79,7 @@
 
 +(BOOL) isPaused;
 +(void) setIsPaused:(BOOL)_isPaused;
+
++(NSString*) playerColor;
 
 @end

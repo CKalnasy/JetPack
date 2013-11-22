@@ -25,6 +25,8 @@
     CCSprite* flameLarge;
     BOOL isFlameChanging;
     
+    CCSprite* angledSprite;
+    
     CGPoint velocity;
     CGPoint acceleration;
     CGSize winSize;
@@ -36,6 +38,9 @@
     BOOL isFacingRight;
     
     CCArray* rects;
+    
+    CCSprite* flatFeet;
+    CCSprite* angledFeet;
 }
 
 @property (nonatomic, readwrite) BOOL isInvyEnabled;
@@ -84,6 +89,9 @@
 
 -(void) faceLeft;
 -(void) faceRight;
+
+-(void) setAngledFeet:(BOOL)angled;
+-(BOOL) areFeetAngled;
 
 
 -(void) updateFlame:(ccTime)delta;

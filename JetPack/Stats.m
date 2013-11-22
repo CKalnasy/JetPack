@@ -31,12 +31,13 @@
         [self addChild:bg z:-10];
         
         //high score label
-        CCLabelTTF* highScore = [CCLabelTTF labelWithString:@"High Score" fontName:@"arial" fontSize:24];
+        CCLabelTTF* highScore = [CCLabelTTF labelWithString:@"1234567890" fontName:@"Orbitron-Medium" fontSize:24];
+        
         highScore.position = CGPointMake(highScore.contentSize.width / 2, winSize.height - highScore.contentSize.height / 2);
         [self addChild:highScore];
         
         //high score value label
-        CCLabelTTF* highScoreNum = [CCLabelTTF labelWithString: [NSNumber numberWithInt:[GlobalDataManager sharedGlobalDataManager].highScore].stringValue fontName:@"arial" fontSize:24];
+        CCLabelTTF* highScoreNum = [CCLabelTTF labelWithString: [NSNumber numberWithInt:[GlobalDataManager sharedGlobalDataManager].highScore].stringValue fontName:@"Orbitron-Medium" fontSize:24];
         highScoreNum.position = CGPointMake(winSize.width - highScoreNum.contentSize.width / 2, winSize.height - highScoreNum.contentSize.height / 2);
         [self addChild:highScoreNum];
         
@@ -64,10 +65,10 @@
         
         
         //back buton
-        CCMenuItem* back = [CCMenuItemImage itemWithNormalImage:@"Store.png" selectedImage:@"Store.png" target:self selector:@selector(back:)];
+        CCMenuItem* back = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(back:)];
         
         CCMenu* backMenu = [CCMenu menuWithItems:back, nil];
-        [backMenu alignItemsVertically];
+        //backMenu.position = CGPointMake(back.contentSize.width/6, winSizeActual.height - statsHeader.contentSize.height - back.contentSize.width/6);
         [self addChild:backMenu];
     }
     return self;
@@ -75,12 +76,11 @@
 
 
 -(void) back:(id)sender{
-    [[CCDirector sharedDirector] replaceScene: [MainMenu scene]];
+    [[CCDirector sharedDirector] popScene];
 }
 
 
 -(void) dealloc{
-    
     //[super dealloc];
 }
 

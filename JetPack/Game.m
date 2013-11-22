@@ -15,10 +15,12 @@
 #import "PowerUp.h"
 #import "Pause.h"
 #import "GameEnded.h"
+#import "AppDelegate.h"
 
 
 @implementation Game
 
+@synthesize isGameOver;
 
 +(CCScene *) scene
 {
@@ -27,7 +29,7 @@
 	[scene addChild: layer z:0 tag:GAME_LAYER_TAG];
     
     Background* background = [Background node];
-    [scene addChild:background z:-1];
+    [scene addChild:background z:-1 tag:BACKGROUND_LAYER_TAG];
     
     [scene setTag:GAME_SCENE_TAG];
 	return scene;
@@ -39,12 +41,14 @@
         winSize = CGSizeMake(320, 480);    //screen size of 3.5" display
         winSizeActual = [[CCDirector sharedDirector] winSize];
         
-        numObsPerScreen = 3.5;
+        numObsPerScreen = 3.3;
         
         lastObsDeleted = 100;
         numObsAdded = 100;
         
         posBeforeFlip = winSizeActual.width * 2;
+        
+        coinRand = arc4random() % 10 - 4;
         
         //power up adding arrays init
         powerUpLow = [NSArray arrayWithObjects:[NSNumber numberWithInt:50], [NSNumber numberWithInt:100], [NSNumber numberWithInt:150], [NSNumber numberWithInt:200], nil];
@@ -63,9 +67,14 @@
         NSString* color = [dataDict valueForKey:@"clothes"];
         NSString* name = [NSString stringWithFormat:@"%@%@%@", @"Jeff-", color, @".png"];
         
+        //Number of seconds for each power up init
+        maxNumSecondsBoost = [[dataDict valueForKey:@"max seconds boost"]intValue];
+        maxNumSecondsDouble = [[dataDict valueForKey:@"max seconds double points"]intValue];
+        maxNumSecondsInvy = [[dataDict valueForKey:@"max seconds invy"]intValue];
         
+        //player init
         player = [Player player:name];
-        player.position = ccp(winSize.width/2, player.contentSize.height/2);
+        player.position = ccp(winSize.width/2, player.contentSize.height/2 + 2.5);
         [self addChild:player z:1];
         [[GlobalDataManager sharedGlobalDataManager] setPlayer:player];
         
@@ -76,19 +85,21 @@
         [self addFuelBar];
         
         //pause button init
-        CCMenuItem* pauseMenuItem = [CCMenuItemImage itemWithNormalImage:@"Icon-Small.png" selectedImage:@"Icon-Small.png" target:self selector:@selector(pause:)];
-        pauseMenuItem.position = CGPointMake(winSizeActual.width/2 - pauseMenuItem.contentSize.width/2, winSizeActual.height/2 - pauseMenuItem.contentSize.height/2);
+        CCMenuItem* pauseMenuItem = [CCMenuItemImage itemWithNormalImage:@"Pause.png" selectedImage:@"Push-Pause.png" target:self selector:@selector(pause:)];
         
         CCMenu* pauseMenu = [CCMenu menuWithItems:pauseMenuItem, nil];
+        pauseMenu.position = CGPointMake(winSizeActual.width - pauseMenuItem.contentSize.width/2, winSizeActual.height - pauseMenuItem.contentSize.height/2);
         [self addChild:pauseMenu];
         [[GlobalDataManager sharedGlobalDataManager] setIsPaused:NO];
+        
+        
+        doDetectCollisions = YES;
         
         //adds touches input.  begins update methods
         self.touchEnabled=YES;
         
         [self addFirstObs];
         [self schedule:@selector(constUpdate:)];
-        //[self schedule:@selector(horizontalMovement:)];
         [self schedule:@selector(collisionDetection:)];
         [self schedule:@selector(accelerometerUpdate:)];
         [self schedule:@selector(whenToAddFuelCan:)];
@@ -98,9 +109,36 @@
 }
 
 -(void) registerWithTouchDispatcher{
-    [[[CCDirector sharedDirector] touchDispatcher] addTargetedDelegate:self priority:0 swallowsTouches:YES];
+    [[[CCDirector sharedDirector] touchDispatcher] addStandardDelegate:self priority:0];
+    //    [[[CCDirector sharedDirector] touchDispatcher] addTargetedDelegate:self priority:0 swallowsTouches:YES];
 }
--(BOOL) ccTouchBegan:(UITouch *)touch withEvent:(UIEvent *)event{
+
+-(void) ccTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    //dont move the player if the opacity layer is visible
+    [self schedule:@selector(speedUpdate:)];
+    [self unschedule:@selector(gravityUpdate:)];
+    self.accelerometerEnabled = YES;
+    
+    if (!isGameRunning) {
+        [self schedule:@selector(idlingjetpack:)];
+    }
+    isGameRunning = YES;
+    
+    isTouchingHorizObs = NO;
+    horizObsLandedOn = nil;
+    
+    CCLOG(@"touches began");
+}
+-(void) ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+    [self removeChild:opacityLayer cleanup:NO];
+    [self schedule:@selector(gravityUpdate:)];
+    [self unschedule:@selector(speedUpdate:)];
+    hasGameBegun = YES;
+    
+    CCLOG(@"touches ended");
+}
+
+/*-(BOOL) ccTouchBegan:(UITouch *)touch withEvent:(UIEvent *)event{
     //dont move the player if the opacity layer is visible
     [self schedule:@selector(speedUpdate:)];
     [self unschedule:@selector(gravityUpdate:)];
@@ -125,6 +163,7 @@
     hasGameBegun = YES;
     CCLOG(@"touch ended");
 }
+*/
 -(void) accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration{
     float deceleration = 0.4f;
     float sensitivity = 6.0f;
@@ -148,12 +187,14 @@
     if (didChangeLeftToRight) {
         if (player.position.x >= posBeforeFlip + 6) {
             [player faceRight];
+            //[angledFeetPlayer faceRight];
             posBeforeFlip = winSizeActual.width * 2;
         }
     }
     else {
         if (player.position.x <= posBeforeFlip - 6) {
             [player faceLeft];
+            //[angledFeetPlayer faceLeft];
             posBeforeFlip = winSizeActual.width * 2;
         }
     }
@@ -161,7 +202,7 @@
     previousAcc = acceleration.x;
 }
 
-//score and fall to bottom.  afterlife power up.  horiz obs movement call here
+//score and fall to bottom.  afterlife power up.  horiz obs movement call here. angled feet
 -(void) constUpdate:(ccTime)delta{
     if(player.position.y - player.contentSize.height/2> highestPlayerPosition){
         highestPlayerPosition = player.position.y - player.contentSize.height/2;
@@ -181,7 +222,7 @@
     [[GlobalDataManager sharedGlobalDataManager] setScoreActual:scoreActual];
     
     //fall to bottom
-    if(player.position.y < -player.contentSize.height){
+    if(player.position.y < -player.contentSize.height/2){
         //do falling to bottom stuff bere
         [self schedule:@selector(playerFellToBottom:)];
         [self unschedule:@selector(constUpdate:)];
@@ -200,8 +241,23 @@
     //give all classes access to velocity in y direction (by accessing player)
     [[GlobalDataManager sharedGlobalDataManager] setPlayer:player];
     
-    if ([[GlobalDataManager sharedGlobalDataManager] fuel] == 0) {
-        CCLOG(@"score: %d", scoreRaw);
+    if (player.fuel < 0) {
+        player.fuel = 0;
+        [[GlobalDataManager sharedGlobalDataManager] setFuel:player.fuel];
+        
+        self.touchEnabled = NO;
+        [self unschedule:@selector(speedUpdate:)];
+        [self schedule:@selector(gravityUpdate:)];
+        [self unschedule:@selector(idlingjetpack:)];
+        didRunOutOfFuel = YES;
+    }
+    
+    //angled feet
+    if (player.velocity.y > 0 && ![player areFeetAngled]) {
+        [player setAngledFeet:YES];
+    }
+    else if (player.velocity.y <= 0 && [player areFeetAngled]) {
+        [player setAngledFeet:NO];
     }
 }
 
@@ -390,9 +446,23 @@
 -(void) addObs:(ccTime)delta{
     //add new obstacles when the last one added is at twice the screen height
     if(lastObsAdded.position.y <= winSize.height * 2){
-        if (!added) {
-            [self addHorizontalObsField];
-            added = YES;
+//        if (!added) {
+//            [self addCoinField:lastObsAdded.position];
+//            added = YES;
+//            return;
+//        }
+        
+        //coin stuff
+        int coinLocToAdd = 40 * (numFewCoinsAdded + 1) + 5 * numFewCoinsAdded + coinRand;
+        if (coinLocToAdd <= scoreRaw + winSize.height*2 / SCORE_MODIFIER) {
+            //if the coins are supposed to be added to a pathed obs
+            if ((previousPathedObsLoc < scoreRaw + winSize.height*2 / SCORE_MODIFIER)) {
+                [self addFewCoins:lastObsAdded.position];
+            }
+            
+            //reset coinRand for each new few coin
+            coinRand = arc4random() % 10 - 4;
+            numFewCoinsAdded++;
             return;
         }
         
@@ -407,7 +477,6 @@
             [self pathedObsToAdd];
             return;
         }
-        
         
         
         Obstacles* obs = [Obstacles obstacle:@"obsticle1.png"];
@@ -529,7 +598,7 @@
         [obs2 setType:@"special obstacle 1"];
         
         int xPos = obs1.contentSize.width/5 * (i + 1) + obs1.contentSize.width * (1.5/5.0);
-        int yPos = winSize.height * 2 + (i + 1) * (player.contentSize.height * 1.25 + obs1.contentSize.height);
+        int yPos = lastObsAdded.position.y + (i + 1) * (player.contentSize.height * 1.25 + obs1.contentSize.height);
         
         obs1.position = CGPointMake(xPos, yPos);
         obs2.position = CGPointMake(winSize.width - xPos, yPos);
@@ -539,7 +608,9 @@
         [self addChild:obs2 z:0 tag:numObsAdded];
         numObsAdded++;
         
-        lastObsAdded = obs1;
+        if (i == 5) {
+            lastObsAdded = obs1;
+        }
     }
     
     int end = numObsAdded - 1;
@@ -561,7 +632,7 @@
         [obs2 setType:@"special obstacle 1"];
         
         int xPos = obs1.contentSize.width/3 * (i + 1);
-        int yPos = winSize.height * 2 + (i + 1) * (player.contentSize.height * 1.25 + obs1.contentSize.height);
+        int yPos = lastObsAdded.position.y + (i + 1) * (player.contentSize.height * 1.25 + obs1.contentSize.height);
         
         obs1.position = CGPointMake(xPos, yPos);
         obs2.position = CGPointMake(winSize.width - xPos, yPos);
@@ -570,7 +641,9 @@
         numObsAdded++;
         [self addChild:obs2 z:0 tag:numObsAdded];
         numObsAdded++;
-        lastObsAdded = obs1;
+        if (i == 2) {
+            lastObsAdded = obs1;
+        }
     }
     
     BOOL isMovingLeft = YES;
@@ -610,7 +683,9 @@
         [self addChild:obs2 z:0 tag:numObsAdded];
         numObsAdded++;
         
-        lastObsAdded = obs1;
+        if (i == 21) {
+            lastObsAdded = obs1;
+        }
     }
     
     int end = numObsAdded - 1;
@@ -630,13 +705,15 @@
             obs.type = @"special obstacle 2";
             
             int x = obs.contentSize.width/2 + (i+1)*(winSize.width - obs.contentSize.width)/10;
-            int y = winSize.height * 2 + (i+1)*(winSize.height/10);
+            int y = lastObsAdded.position.y + (i+1)*(winSize.height/10);
             
             obs.position = CGPointMake(x, y);
             
             [self addChild:obs z:0 tag:numObsAdded];
             numObsAdded++;
-            lastObsAdded = obs;
+            if (i == 9) {
+                lastObsAdded = obs;
+            }
         }
     }
     else {
@@ -645,13 +722,16 @@
             obs.type = @"special obstacle 2";
             
             int x = winSize.width - (obs.contentSize.width/2 + (i+1)*(winSize.width - obs.contentSize.width)/10);
-            int y = winSize.height * 2 + (i+1)*(winSize.height/10);
+            int y = lastObsAdded.position.y + (i+1)*(winSize.height/10);
             
             obs.position = CGPointMake(x, y);
             
             [self addChild:obs z:0 tag:numObsAdded];
             numObsAdded++;
-            lastObsAdded = obs;
+            
+            if (i == 9) {
+                lastObsAdded = obs;
+            }
         }
     }
     
@@ -682,8 +762,8 @@
         obsLeft.type = @"special obstacle 3";
         obsRight.type = @"special obstacle 3";
         
-        obsLeft.position  = CGPointMake(obsLeft.contentSize.width/2, winSize.height*2 + (i+1)*winSize.height/8);
-        obsRight.position = CGPointMake(winSize.width - obsRight.contentSize.width/2, winSize.height*2 + (i+1)*winSize.height/8);
+        obsLeft.position  = CGPointMake(obsLeft.contentSize.width/2, lastObsAdded.position.y + (i+1)*winSize.height/8);
+        obsRight.position = CGPointMake(winSize.width - obsRight.contentSize.width/2, lastObsAdded.position.y + (i+1)*winSize.height/8);
         
         [self addChild:obsLeft z:0 tag:numObsAdded];
         numObsAdded++;
@@ -696,13 +776,15 @@
             Obstacles* obsMid = [Obstacles obstacle:@"obsticle1.png"];
             obsMid.type = @"obstacle";
             
-            obsMid.position = CGPointMake(winSize.width/2 , winSize.height*2 + (i+1)*winSize.height/8);
+            obsMid.position = CGPointMake(winSize.width/2 , lastObsAdded.position.y + (i+1)*winSize.height/8);
             
             [self addChild:obsMid z:0 tag:numObsAdded];
             numObsAdded++;
         }
         
-        lastObsAdded = obsRight;
+        if (i == 23) {
+            lastObsAdded = obsRight;
+        }
     }
     
     int end = numObsAdded - 1;
@@ -721,7 +803,7 @@
         Obstacles* obs = [Obstacles obstacle:@"obsticle1.png"];
         obs.type = @"special obstacle 4";
         
-        obs.position = CGPointMake((i + 0.5) * obs.contentSize.width, lastObsAdded.position.y + winSize.height/numObsPerScreen*2);
+        obs.position = CGPointMake((i + 0.5) * obs.contentSize.width, lastObsAdded.position.y + winSize.height/numObsPerScreen*2.4);
         
         [self addChild:obs z:0 tag:numObsAdded];
         numObsAdded++;
@@ -733,7 +815,7 @@
         Obstacles* obs = [Obstacles obstacle:@"obsticle1.png"];
         obs.type = @"special obstacle 4";
         
-        obs.position = CGPointMake((i + .5) * obs.contentSize.width, lastObsAdded.position.y + winSize.height/numObsPerScreen*2);
+        obs.position = CGPointMake((i + .5) * obs.contentSize.width, lastObsAdded.position.y + winSize.height/numObsPerScreen*2.4);
         
         [self addChild:obs z:0 tag:numObsAdded];
         numObsAdded++;
@@ -769,16 +851,19 @@
         
         
         int rand = arc4random() % (int)(winSize.width - obs.contentSize.width) + obs.contentSize.width/2;
-        obs.position = CGPointMake(rand, winSize.height*2 + (i+1)*winSize.height/numObsPerScreen/1.5);
+        obs.position = CGPointMake(rand, lastObsAdded.position.y + (i+1)*winSize.height/numObsPerScreen/1.5);
         
         [self addChild:obs z:0 tag:numObsAdded];
         numObsAdded++;
-        lastObsAdded = obs;
+        
+        if (i == (int)(numObsPerScreen*1.5*1.5) - 1) {
+            lastObsAdded = obs;
+        }
         
         [self makeHorizontalObs:obs];
     }
     
-    return lastObsAdded.position.y - winSize.height*2 + winSize.height/numObsPerScreen/1.5;
+    return lastObsAdded.position.y - lastObsAdded.position.y + winSize.height/numObsPerScreen/1.5;
 }
 
 
@@ -787,10 +872,10 @@
         return;
     }
     
-    int locToAdd = 70 + (numPowerUpsAdded * 10) + lastPowerUpEndOrLoc;
+    int locToAdd = 60 + (numPowerUpsAdded * 7.5) + lastPowerUpEndOrLoc;
     
-    if (numPowerUpsAdded > 7) {
-        locToAdd = 150 + lastPowerUpEndOrLoc;
+    if (numPowerUpsAdded >= 8) {
+        locToAdd = 120 + lastPowerUpEndOrLoc;
     }
     
     if (locToAdd <= scoreRaw + winSize.height * 2 / SCORE_MODIFIER) {
@@ -806,7 +891,7 @@
     
         //choose which power up to add
         int rand = arc4random() % 100 + 1;
-        if (rand <= 50) {
+        if (rand <= 500) {
             [self addBoost:pointToAdd];
         }
         else if (rand <= 70) {
@@ -914,16 +999,10 @@
         locToAdd = 40 + previousPathedObsLoc;
     }
     
-    Obstacles* best = (Obstacles*)[self getChildByTag:lastObsDeleted];
-    for (int i = lastObsDeleted + 1; i < numObsAdded; i++) {
-        Obstacles* temp = (Obstacles*)[self getChildByTag:i];
-        
-        if (abs(locToAdd - (int)(temp.position.y / SCORE_MODIFIER) - scoreRaw) < abs(locToAdd - (int)(best.position.y / SCORE_MODIFIER) - scoreRaw)) {
-            best = temp;
-        }
-    }
+    Obstacles* best = (Obstacles*)[self getChildByTag:lastObsAdded.tag]; //reference to what lastobsadded references
+    
     //choose which pathed obs to add
-    int rand = arc4random() % 120 + 1;
+    int rand = arc4random() % 160 + 1;
     int end;
     
     if (rand <= 20) {
@@ -944,8 +1023,11 @@
     else if (rand <= 100) {
         end = [self addOneOpeningMany];
     }
-    else {
+    else if (rand <= 120) {
         end = [self addHorizontalObsField];
+    }
+    else {
+        end = [self addCoinField:lastObsAdded.position];
     }
     
     numPathedObsAdded++;
@@ -953,39 +1035,156 @@
 }
 
 
--(void) addCoins{
-    //first unschedule the add obs update
-    [self unschedule:@selector(addObs:)];
+-(int) addCoinField:(CGPoint)point {
+    int rand = arc4random() % 100 + 1;
+    int numCoinsToAdd;
     
-    int numCoinsToAdd = 10;
-    
-    //determines which pattern the coins should be added in
-    int rand = arc4random() % 3 + 1;
-    rand = 1;
-    if (rand == 1) {
-        for (int i=0; i<numCoinsToAdd; i++) {
-            Obstacles* coin = [Obstacles obstacle:@"coin.png"];
-            [coin setType:@"coin"];
-            int x = winSize.width/2;
-            int y = lastObsAdded.position.y + winSize.height/5;
-            
-            //adds coin to middle of screen and one fifth the screen size
-            coin.position = ccp(x,y);
-            
-            [self addChild:coin z:0 tag:numObsAdded];
-            lastObsAdded = coin;
-            //number of coins is odd. so always add 2
-            numObsAdded++;
-        }
+    if (rand <= 5) {
+        numCoinsToAdd = 4;
     }
-    else if (rand == 2) {
-        
+    else if (rand <= 10) {
+        numCoinsToAdd = 5;
+    }
+    else if (rand <= 20) {
+        numCoinsToAdd = 6;
+    }
+    else if (rand <= 60) {
+        numCoinsToAdd = 8;
+    }
+    else if (rand <= 80) {
+        numCoinsToAdd = 9;
     }
     else {
-        
+        numCoinsToAdd = 10;
     }
-    //schedule the add obs update after adding coins to screen
-    [self schedule:@selector(addObs:)];
+    
+    int bagRandPos = arc4random() % (numCoinsToAdd * 2);
+    
+    //coins.contentSize.width = 12 at most
+    int x = arc4random() % (int)(winSize.width - 12) + 6;
+    
+    for (int i = 0; i < numCoinsToAdd; i++) {
+        [coinLoc addObject:[NSNumber numberWithInt:numObsAdded]];
+        
+        int randStartingPos = arc4random() % 5 + 1;
+        NSString* name = [NSString stringWithFormat:@"Coin%i.png",randStartingPos];
+        
+        Obstacles* coin;
+        if (i == bagRandPos) {
+            coin = [Obstacles obstacle:@"Money-bag.png"];
+            coin.type = @"money bag";
+        }
+        else {
+            coin = [Obstacles obstacle:name];
+            coin.type = @"coin";
+            coin.coinStage = randStartingPos;
+        }
+        
+        
+        coin.position = CGPointMake(x, point.y + winSize.height/numObsPerScreen + i*2*coin.contentSize.height);
+        [self addChild:coin z:0 tag:numObsAdded];
+        numObsAdded++;
+        
+        
+        if (i == numCoinsToAdd-1) {
+            lastObsAdded = coin;
+        }
+    }
+    
+    [self schedule:@selector(updateCoins:) interval:1/4.0];
+    
+    return lastObsAdded.position.y - (point.y + winSize.height/numObsPerScreen);
+}
+-(void) addFewCoins:(CGPoint)point {
+    int rand = arc4random()%100 + 1;
+    int numCoinsToAdd;
+    
+    if (rand <= 30) {
+        numCoinsToAdd = 3;
+    }
+    else {
+        numCoinsToAdd = 4;
+    }
+    
+    int bagRandPos = arc4random() % (numCoinsToAdd * 4);
+    
+    unsigned int randNum = arc4random(); //must have max of 2^32-1 for arc4random()
+    for (int i = 0; i < numCoinsToAdd; i++) {
+        int startingPos = arc4random()%5 + 1;
+        NSString* name = [NSString stringWithFormat:@"Coin%i.png", startingPos];
+        
+        Obstacles* coin;
+        if (i == bagRandPos) {
+            coin = [Obstacles obstacle:@"Money-bag.png"];
+            coin.type = @"money bag";
+        }
+        else {
+            coin = [Obstacles obstacle:name];
+            coin.type = @"coin";
+            coin.coinStage = startingPos;
+        }
+        
+        int x = randNum % (int)(winSize.width - coin.contentSize.width) + coin.contentSize.width/2;
+        coin.position = CGPointMake(x, point.y + winSize.height/numObsPerScreen + i*coin.contentSize.height*2);
+        
+        [self addChild:coin z:0 tag:numObsAdded];
+        numObsAdded++;
+        
+        if (i == numCoinsToAdd - 1) {
+            lastObsAdded = coin;
+        }
+    }
+    [self schedule:@selector(updateCoins:) interval:1/4.0];
+}
+-(void) updateCoins:(ccTime)delta{
+    BOOL atLeastOneCoin = NO;
+    
+    for (int i = lastObsDeleted; i < numObsAdded; i++) {
+        Obstacles* o = (Obstacles*)[self getChildByTag:i];
+        
+        if ([o.type isEqualToString:@"coin"]) {
+            BOOL isLast = NO;
+            if (lastObsAdded == o) {
+                isLast = YES;
+            }
+            
+            [o incrementCoinStage];
+            NSString* name = [NSString stringWithFormat:@"Coin%i.png",o.coinStage];
+            
+            //basically a copy constructor. The dimensions of the sprite need to change with each update, thus cannot just change texture
+            CGPoint pos = o.position;
+            int tag = o.tag;
+            NSString* type = o.type;
+            int stage = o.coinStage;
+            
+            [self removeChild:o];
+            o = nil;
+            
+            o = [Obstacles obstacle:name];
+            o.type = type;
+            o.position = pos;
+            o.coinStage = stage;
+            o.tag = tag;
+            [self addChild:o z:0 tag:tag];
+//            Obstacles* oCopy = [Obstacles obstacle:name];
+//            oCopy.position = pos;
+//            oCopy.type = type;
+//            oCopy.coinStage = stage;
+//            
+//            [self addChild:oCopy z:0 tag:tag];
+            
+            //to re-reference last obs added
+            if (isLast) {
+                lastObsAdded = o;
+            }
+            
+            atLeastOneCoin = YES;
+        }
+    }
+    
+    if (!atLeastOneCoin) {
+        [self unschedule:@selector(updateCoins:)];
+    }
 }
 
 -(void) addBoost:(CGPoint)point {
@@ -1006,8 +1205,6 @@
 -(void) collideWithBoost:(ccTime)delta{
     //do the sprites intersect
     if ([self doesPlayerIntersectPowerUp:boost]) {
-        CCLOG(@"COLLISION WITH BOOST!!!");
-        
         //do boostly things
         player.isBoostingEnabled = YES;
         
@@ -1022,7 +1219,7 @@
         [self schedule:@selector(boostUp:)];
         
         //stop detecting colisions
-        [self unschedule:@selector(collisionDetection:)];
+        doDetectCollisions = NO;
         
         //add power up bar
         [self addPowerUpBar:boost];
@@ -1040,16 +1237,28 @@
     }
 }
 -(void) boostUp:(ccTime)delta{
-    //this number is divided by 60 (number of calls per second)
-    if (numSecondsPowerUp >= 300) {
-        lastPowerUpEndOrLoc = scoreRaw + player.position.y / SCORE_MODIFIER;
+    //give the player an extra second before collision detection begins
+    if (numSecondsPowerUp >= (maxNumSecondsBoost + 1) * 60 ) {
         numSecondsPowerUp = 0;
-        
-        player.isBoostingEnabled = NO;
-        self.touchEnabled = YES;
-        [self schedule:@selector(collisionDetection:)];
-        [self schedule:@selector(gravityUpdate:)];
+        doDetectCollisions = YES;
         [self unschedule:@selector(boostUp:)];
+        player.isBoostingEnabled = NO;
+        return;
+    }
+    else if (numSecondsPowerUp > 60 * maxNumSecondsBoost) {
+        numSecondsPowerUp++;
+        return;
+    }
+    if (numSecondsPowerUp >= 60 * maxNumSecondsBoost) {
+        lastPowerUpEndOrLoc = scoreRaw + player.position.y / SCORE_MODIFIER;
+        numSecondsPowerUp++;
+        
+        [self unschedule:@selector(updatePowerUpBar:)];
+        [self removeChild:innerPowerUpBar];
+        [self removeChild:outerPowerUpBar];
+        
+        self.touchEnabled = YES;
+        [self schedule:@selector(gravityUpdate:)];
         return;
     }
     if (player.velocity.y >= 9) {
@@ -1114,9 +1323,6 @@
         //do invincibilityly things
         player.isInvyEnabled = YES;
         
-        //stop collision detection
-        //[self unschedule:@selector(collisionDetection:)];
-        
         //add power up bar
         [self addPowerUpBar:invy];
         
@@ -1133,18 +1339,7 @@
         invy.isLooking = NO;
     }
 }
--(void) invy:(ccTime)delta{
-    if (numSecondsPowerUp >= 300 && player.opacity >= 255) {
-        lastPowerUpEndOrLoc = scoreRaw + player.position.y / SCORE_MODIFIER;
-        numSecondsPowerUp = 0;
-        
-        player.isInvyEnabled = NO;
-        player.isFading = NO;
-        [self schedule:@selector(collisionDetection:)];
-        [self unschedule:@selector(invy:)];
-        return;
-    }
-    
+-(void) invertedMagnet:(ccTime)delta{
     for (int i = lastObsDeleted; i < numObsAdded; i++) {
         Obstacles* obs = (Obstacles*)[self getChildByTag:i];
         
@@ -1174,6 +1369,53 @@
             obs.position = CGPointMake(magnitude * newX + obs.position.x, magnitude* newY +obs.position.y);
         }
     }
+}
+-(void) invy:(ccTime)delta{
+    if (numSecondsPowerUp >= 60 * maxNumSecondsInvy) {
+        lastPowerUpEndOrLoc = scoreRaw + player.position.y / SCORE_MODIFIER;
+        numSecondsPowerUp = 0;
+        
+        [self unschedule:@selector(updatePowerUpBar:)];
+        [self removeChild:innerPowerUpBar];
+        [self removeChild:outerPowerUpBar];
+        
+        player.isInvyEnabled = NO;
+        player.isFading = NO;
+        [self unschedule:@selector(invy:)];
+        return;
+    }
+    
+    for (int i = lastObsDeleted; i < numObsAdded; i++) {
+        Obstacles* obs = (Obstacles*)[self getChildByTag:i];
+        
+        if ([obs.type rangeOfString:@"obstacle" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+            CGPoint obsPos = obs.position;
+            CGPoint playerPos = player.position;
+            
+            float deltaX = obsPos.x - playerPos.x;
+            float deltaY = obsPos.y - playerPos.y;
+            
+            //this makes an eclipse
+            float distance = 1.35*powf( powf(deltaX, 2)  +  0.45*powf(deltaY, 2) , 0.5);
+            
+            if (abs(distance) <= 150) {
+                //set distance to the actual distance, not the adjusted one above for eclipse
+                distance = powf( powf(deltaX, 2)  +  powf(deltaY, 2) , 0.5);
+                
+                //distance to move the obs
+                float extendedDist = distance + 2;
+                float theta = atan2f(deltaY, deltaX);
+                
+                float newX = cosf(theta)*extendedDist - deltaX;
+                float newY = sinf(theta)*extendedDist - deltaY;
+                
+                //when the player is closer to an obstacle, make the obs move away faster
+                float magnitude = -distance/150 + 3;
+                
+                obs.position = CGPointMake(magnitude * newX + obs.position.x, magnitude* newY +obs.position.y);
+            }
+        }
+    }
     
     numSecondsPowerUp++;
 }
@@ -1185,10 +1427,6 @@
     doublePoints.isLooking = YES;
     
     doublePoints.position = point;
-    
-//    obs.visible = NO;
-//    obs.position = CGPointMake(winSize.width * 2, obs.position.y);
-//    obs.type = @"removed obstacle";
     
     [self addChild:doublePoints];
     
@@ -1218,15 +1456,18 @@
     }
 }
 -(void) doublePoints:(ccTime)delta{
-    if (numSecondsPowerUp >= 300) {
+    if (numSecondsPowerUp >= 60 * maxNumSecondsDouble) {
         lastPowerUpEndOrLoc = scoreRaw + player.position.y / SCORE_MODIFIER;
         numSecondsPowerUp = 0;
+        
+        [self unschedule:@selector(updatePowerUpBar:)];
+        [self removeChild:innerPowerUpBar];
+        [self removeChild:outerPowerUpBar];
         
         player.isDoublePointsEnabled = NO;
         [self unschedule:@selector(doublePoints:)];
         return;
     }
-    
     
     numSecondsPowerUp++;
 }
@@ -1366,6 +1607,12 @@
 -(void) addFuel{
     //top off the fuel tank
     player.fuel = player.maxFuel;
+    
+    if (didRunOutOfFuel) {
+        self.touchEnabled = YES;
+        didRunOutOfFuel = NO;
+        [self schedule:@selector(idlingjetpack:)];
+    }
 }
 
 -(void) whenToAddFuelCan:(ccTime)delta{
@@ -1419,13 +1666,21 @@
         
         [self unschedule:@selector(gravityUpdate:)];
         [self unschedule:@selector(playerFellToBottom:)];
-        
-        if (numContinuesUsed < 1) {
+        [self unschedule:@selector(idlingjetpack:)];
+
+        if (numContinuesUsed < 1 && [[GlobalDataManager sharedGlobalDataManager]totalCoins] >= COINS_TO_CONTINUE) {
             [self continueGame];
         }
         else {
             [self gameEnded];
-            [[CCDirector sharedDirector] replaceScene:[GameEnded scene]];
+            [self removeChild:continueMenu];
+            
+            opacityLayer = [CCLayerColor layerWithColor:ccc4(0, 0, 0, 150)];
+            [self addChild:opacityLayer z:9];
+            
+            isGameOver = YES;
+            GameEnded* ge = [GameEnded node];
+            [self addChild:ge z:10];
         }
     }
     //keep horizontal moving obs moving horizontally
@@ -1439,44 +1694,55 @@
         }
     }
 }
--(void) continueGame{
-    CCMenuItem* continueGame = [CCMenuItemImage itemWithNormalImage:@"Stats.png" selectedImage:@"Stats.png" target:self selector:@selector(doContinue:)];
-    continueMenu = [CCMenu menuWithItems:continueGame, nil];
+-(void) continueGame {
+    //todo: ask if they would like to continue
+    CCMenuItem* continueYes = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(doContinue:)];
+    CCMenuItem* continueNo = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(doNotContinue:)];
+    
+    continueMenu = [CCMenu menuWithItems:continueNo, continueYes, nil];
+    [continueMenu alignItemsHorizontallyWithPadding:continueYes.contentSize.width];
     [self addChild:continueMenu];
     
     self.touchEnabled = NO;
-    
-    [self unschedule:@selector(idlingjetpack:)];
 }
 //will need timer for how long this is shown for
--(void) doContinue:(id)sender{
-    if ([GlobalDataManager sharedGlobalDataManager].numContinues > 0) {
-        //reset the players position
-        player.position = CGPointMake(winSize.width/2, player.contentSize.height/2);
-        
-        //set game to original state
-        [self schedule:@selector(collisionDetection:)];
-        [self schedule:@selector(constUpdate:)];
-        player.velocity = CGPointMake(0, 0);
-        self.touchEnabled = YES;
-        [self schedulePowerUpLookers];
-        
-        //add to continues used and subtract one from numContinues
-        numContinuesUsed++;
-        [[GlobalDataManager sharedGlobalDataManager] setNumContinues:[GlobalDataManager sharedGlobalDataManager].numContinues - 1];
-        
-        //reset hasgamebegun
-        hasGameBegun = NO;
-        
-        isGameRunning = NO;
-        
-        [self removeChild:continueMenu cleanup:NO];
-    }
-    else {
-        [self gameEnded];
-        //todo: send user to in app purchase of continue coins
-        [[CCDirector sharedDirector] replaceScene: [GameEnded scene]];
-    }
+-(void) doContinue:(id)sender {
+    numContinuesUsed++;
+    
+    //top off the fuel tank
+    player.fuel = player.maxFuel;
+    
+    //put the player on the lowest obstacle
+    Obstacles* lowest = [self findLowestObs];
+    player.position = CGPointMake(lowest.position.x, lowest.position.y + lowest.contentSize.height/2 + player.contentSize.height/2 + 2.5);
+    
+    //lower total coins
+    [[GlobalDataManager sharedGlobalDataManager] setTotalCoins:[[GlobalDataManager sharedGlobalDataManager] totalCoins] - COINS_TO_CONTINUE];
+    
+    //set game to original state
+    [self schedule:@selector(collisionDetection:)];
+    [self schedule:@selector(constUpdate:)];
+    player.velocity = CGPointMake(0, 0);
+    self.touchEnabled = YES;
+    [self schedulePowerUpLookers];
+    
+    //reset hasgamebegun
+    hasGameBegun = NO;
+    
+    isGameRunning = NO;
+    
+    [self removeChild:continueMenu cleanup:NO];
+}
+-(void) doNotContinue:(id)sender {
+    [self gameEnded];
+    [self removeChild:continueMenu];
+    
+    opacityLayer = [CCLayerColor layerWithColor:ccc4(0, 0, 0, 150)];
+    [self addChild:opacityLayer z:9];
+    
+    isGameOver = YES;
+    GameEnded* ge = [GameEnded node];
+    [self addChild:ge z:10];
 }
 
 -(void)unschedulePowerUpLookers{
@@ -1534,8 +1800,10 @@
     //reset fuel
     [[GlobalDataManager sharedGlobalDataManager] setFuel:player.maxFuel];
     
-    [self isHighScore];
+    //reset numCoins
+    [[GlobalDataManager sharedGlobalDataManager] setNumCoins:0];
     
+    [self isHighScore];
 }
 //is the score received on the just finished game the highest
 -(void) isHighScore{
@@ -1544,6 +1812,25 @@
     }
 }
 
+-(Obstacles*) findLowestObs {
+    Obstacles* lowest = (Obstacles*)[self getChildByTag:numObsAdded - 1];
+    
+    for (int i = lastObsDeleted; i < numObsAdded; i++) {
+        Obstacles* o = (Obstacles*)[self getChildByTag:i];
+        
+        if (o.position.y < lowest.position.y && [o.type rangeOfString:@"obstacle" options:NSCaseInsensitiveSearch].location != NSNotFound && o.position.y > 0) {
+            lowest = o;
+        }
+    }
+    
+    //if its a horizontal obs, make it a normal obstacle
+    if ([lowest.type isEqualToString:@"horizontal obstacle"]) {
+        lowest.type = @"obstacle";
+        lowest.speed = 0;
+    }
+    
+    return lowest;
+}
 
 -(void) collisionDetection:(ccTime)delta{
     //collision detection for obstacles
@@ -1555,22 +1842,28 @@
         if ([self doesPlayerIntersectObstacle:temp]) {
             //COLLISION!!!!!!!
             //find out what the player collided with
-            if (([temp.type rangeOfString:@"obstacle" options:NSCaseInsensitiveSearch].location != NSNotFound)  &&  (player.velocity.y > 0 || player.velocity.y <= -4)) {
+            if (([temp.type rangeOfString:@"obstacle" options:NSCaseInsensitiveSearch].location != NSNotFound)  &&  (player.velocity.y > 0 || player.velocity.y <= -4) && doDetectCollisions) {
                 //if statement: if its a obstacle and the player is moving up (i.e. hit the bottom) or the player is comimg crashing down on an obsacle. Then he loses.
                 
-                //[self playerHitObs];
+                [self playerHitObs];
             }
-            else if ([temp.type isEqualToString:@"coin"]) {
-                CCLOG(@"COLLISION WITH COIN: %i,",i);
+            else if ([temp.type isEqualToString:@"coin"] || [temp.type isEqualToString:@"money bag"]) {
                 //add to the coins count
-                numCoins++;
-                [[GlobalDataManager sharedGlobalDataManager] setNumCoins:numCoins];
+                if ([temp.type isEqualToString:@"coin"]) {
+                    numCoins++;
+                }
+                else {
+                    numCoins += MONEY_BAG_VALUE;
+                }
                 
+                [[GlobalDataManager sharedGlobalDataManager] setNumCoins:numCoins];
+               
+                //todo: remove the coin, not move it
                 //position the coin outside of the viewing window and make it not visible
                 [temp setVisible:NO];
                 temp.position = CGPointMake(winSize.width * 2, temp.position.y);
             }
-            else if (CGRectIntersectsRect([player feetRect], [temp bottomRect])  &&  ([temp.type rangeOfString:@"obstacle" options:NSCaseInsensitiveSearch].location != NSNotFound)  &&  (player.velocity.y <= 0 && player.velocity.y > -4)) {
+            else if (CGRectIntersectsRect([player feetRect], [temp bottomRect])  &&  ([temp.type rangeOfString:@"obstacle" options:NSCaseInsensitiveSearch].location != NSNotFound)  &&  (player.velocity.y <= 0 && player.velocity.y > -4) && !didRunOutOfFuel) {
                 //if statement: if the player comes in contact with an obstacle and he isn't coming crashing down on it, he will land on it
                 player.velocity = CGPointMake(player.velocity.x, 0);
                 
@@ -1587,16 +1880,19 @@
             if (player.velocity.y == 0) {
                 if (CGRectIntersectsRect([player feetRect], [temp bottomRect])) {
                     if (([temp.type isEqualToString:@"obstacle"])) {
-                        player.position = CGPointMake(player.position.x, temp.position.y + temp.contentSize.height / 2 + player.contentSize.height / 2);
+                        player.position = CGPointMake(player.position.x, temp.position.y + temp.contentSize.height / 2 + player.contentSize.height / 2 + 2.5);
                     }
                     else if ([temp.type isEqualToString:@"horizontal obstacle"]) {
-                        player.position = CGPointMake(player.position.x, temp.position.y + temp.contentSize.height / 2 + player.contentSize.height / 2);
+                        player.position = CGPointMake(player.position.x, temp.position.y + temp.contentSize.height / 2 + player.contentSize.height / 2 + 2.5);
                         
                         if (!isTouchingHorizObs) {
                             diffCenterObsAndPlayer = player.position.x - temp.position.x;
                             isTouchingHorizObs = YES;
                             horizObsLandedOn = temp;
                         }
+                    }
+                    if (didRunOutOfFuel) {
+                        [self schedule:@selector(gravityUpdate:)];
                     }
                 }
             }
@@ -1609,7 +1905,7 @@
 
 
 -(BOOL) doesPlayerIntersectObstacle:(Obstacles*)temp{
-    return CGRectIntersectsRect([player playerRect], [temp bottomRect]) || CGRectIntersectsRect([player jetpackRect], [temp bottomRect]) || CGRectIntersectsRect([player playerRect], [temp middleRect]) || CGRectIntersectsRect([player jetpackRect], [temp middleRect]);
+    return CGRectIntersectsRect([player playerRect], [temp bottomRect]) || CGRectIntersectsRect([player jetpackRect], [temp bottomRect]) || CGRectIntersectsRect([player playerRect], [temp middleRect]) || CGRectIntersectsRect([player jetpackRect], [temp middleRect]) || CGRectIntersectsRect([player feetRect], [temp bottomRect]) || CGRectIntersectsRect([player feetRect], [temp middleRect]);
 }
 -(BOOL) doesPlayerIntersectPowerUp:(PowerUp*)temp{
     return CGRectIntersectsRect([player playerRect], [temp getRect]) || CGRectIntersectsRect([player jetpackRect], [temp getRect]);
@@ -1624,8 +1920,8 @@
     
     innerFuelBarRect = CGRectMake(innerFuelBar.position.x, innerFuelBar.position.y, innerFuelBar.contentSize.width, innerFuelBar.contentSize.height);
     
-    [self addChild:outer z:1];
-    [self addChild:innerFuelBar z:0];
+    [self addChild:outer];
+    [self addChild:innerFuelBar];
     [self schedule:@selector(updateFuelBar:)];
 }
 -(void) updateFuelBar:(ccTime)delta{
@@ -1639,17 +1935,18 @@
     innerFuelBar.position = CGPointMake(innerFuelBarRect.origin.x, innerFuelBarRect.origin.y);
     [self addChild:innerFuelBar];
 }
-//test above and below methods
+
 -(void) addPowerUpBar: (PowerUp*)powerUp{
-    CCSprite* outer = [CCSprite spriteWithFile:@"outer.png"];
-    innerPowerUpBar = [CCSprite spriteWithFile:@"inner.png"];
+    outerPowerUpBar = [CCSprite spriteWithFile:@"PU-boarder.png"];
+    innerPowerUpBar = [CCSprite spriteWithFile:@"PU-inner-bar.png"];
     
-    outer.position = CGPointMake(outer.contentSize.width/2, outer.contentSize.height/2);
-    innerFuelBar.position = CGPointMake(innerFuelBar.contentSize.width/2 + 6, innerFuelBar.contentSize.height/2 - 6);
+    outerPowerUpBar.position = CGPointMake(winSizeActual.width - (10 + outerPowerUpBar.contentSize.width/2), winSizeActual.height - winSize.height/20);
+    innerPowerUpBar.position = CGPointMake(outerPowerUpBar.position.x, winSizeActual.height - winSize.height/20);
     
+    innerPowerUpBarRect = CGRectMake(innerPowerUpBar.position.x, innerPowerUpBar.position.y, innerPowerUpBar.contentSize.width, innerPowerUpBar.contentSize.height);
     
-    [self addChild:outer z:1];
-    [self addChild:innerPowerUpBar z:0];
+    [self addChild:outerPowerUpBar];
+    [self addChild:innerPowerUpBar];
     [self schedule:@selector(updatePowerUpBar:)];
 }
 
@@ -1666,19 +1963,21 @@
         maxSecondsPowerUp = maxNumSecondsInvy;
     }
     
-    //"shrink" the power up bar
-    if (numSecondsPowerUp % (maxSecondsPowerUp / (int)innerPowerUpBar.contentSize.width == 0) && didAlreadyMakePowerUpBarSmaller == NO) {
-        innerPowerUpBar.position = CGPointMake(innerPowerUpBar.position.x + 1, innerPowerUpBar.position.y);
-    }
-    else if (numSecondsPowerUp % (maxSecondsPowerUp / (int)innerPowerUpBar.contentSize.width == 0)) {
-        didAlreadyMakePowerUpBarSmaller = NO;
-    }
+    innerPowerUpBarRect = CGRectMake(winSizeActual.width - (innerPowerUpBarRect.size.width/2 + 12), innerPowerUpBarRect.origin.y, 87 - numSecondsPowerUp / (maxSecondsPowerUp*60.0) * 87, innerPowerUpBarRect.size.height);
+    //87 is the width of the inner bar before being shrunk
+    
+    [self removeChild:innerPowerUpBar];
+    innerPowerUpBar = nil;
+    
+    innerPowerUpBar = [CCSprite spriteWithFile:@"PU-inner-bar.png" rect:innerPowerUpBarRect];
+    innerPowerUpBar.position = CGPointMake(innerPowerUpBarRect.origin.x, innerPowerUpBarRect.origin.y);
+    [self addChild:innerPowerUpBar];
 }
 
 
 //pause game and resume game stuff
 -(void) pause:(id)sender{
-    if (isMenuUp == YES) {
+    if (isMenuUp == YES || self.touchEnabled == NO) {
         return;
     }
     opacityLayer = [CCLayerColor layerWithColor:ccc4(0, 0, 0, 150)];
@@ -1723,39 +2022,6 @@
 }
 
 
--(void) invertedMagnet:(ccTime)delta{
-    for (int i = lastObsDeleted; i < numObsAdded; i++) {
-        Obstacles* obs = (Obstacles*)[self getChildByTag:i];
-        
-        CGPoint obsPos = obs.position;
-        CGPoint playerPos = player.position;
-        
-        float deltaX = obsPos.x - playerPos.x;
-        float deltaY = obsPos.y - playerPos.y;
-        
-        //this makes an eclipse
-        float distance = 1.35*powf( powf(deltaX, 2)  +  0.45*powf(deltaY, 2) , 0.5);
-        
-        if (abs(distance) <= 150) {
-            //set distance to the actual distance, not the adjusted one above for eclipse
-            distance = powf( powf(deltaX, 2)  +  powf(deltaY, 2) , 0.5);
-            
-            //distance to move the obs
-            float extendedDist = distance + 2;
-            float theta = atan2f(deltaY, deltaX);
-            
-            float newX = cosf(theta)*extendedDist - deltaX;
-            float newY = sinf(theta)*extendedDist - deltaY;
-            
-            //when the player is closer to an obstacle, make the obs move away faster
-            float magnitude = -distance/150 + 3;
-            
-            obs.position = CGPointMake(magnitude * newX + obs.position.x, magnitude* newY +obs.position.y);
-        }
-    }
-}
-
-
 
 - (void) dealloc
 {
@@ -1769,17 +2035,20 @@
  *** Where I left off ***
  
  
- horizontal obs
- coins
- power up bar
- score display
  
- multitouch
+ *** todo ***
+ change continue game starting location (remove first 2 obstacle)
+ make flipping player occur sooner
+ 
+ horizontal obs (wait until new sizes)
+ fuel fine tuning
+ font stoking
+ where to put power up bar
+ in-app purchases
+ game center
+ game ended scene
  
  will need to figure out how high the player can go (1/3 size, 1/2 size... idk)
  
  
- 
- todo:
- when game ends save data to plists.
  */

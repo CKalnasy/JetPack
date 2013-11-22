@@ -10,6 +10,9 @@
 #import "Game.h"
 #import "Stats.h"
 #import "Player.h"
+#import "Store.h"
+#import "Chartboost.h"
+#import <RevMobAds/RevMobAds.h>
 
 
 @implementation MainMenu
@@ -17,8 +20,9 @@
 +(CCScene *) scene
 {
 	CCScene *scene = [CCScene node];
+    scene.tag = MAIN_MENU_SCENE_TAG;
 	MainMenu *layer = [MainMenu node];
-	[scene addChild: layer z:0 tag:MAIN_MENU_SCENE_TAG];
+	[scene addChild: layer];
 	return scene;
 }
 
@@ -95,6 +99,7 @@
 //        CCMenu* menuSettings = [CCMenu menuWithItems:settings, nil];
 //        menuSettings.position = CGPointMake(winSize.width/3, winSize.width/3);
 //        [self addChild:menuSettings];
+        
     }
 	return self;
 }
@@ -107,10 +112,11 @@
     
 }
 -(void) store:(id)sender{
-    
+    [[CCDirector sharedDirector] pushScene:[Store scene]];
+    //[[CCDirector sharedDirector] replaceScene:[Store scene]];
 }
 -(void) stats:(id)sender{
-    [[CCDirector sharedDirector] replaceScene:[Stats scene]];
+    [[CCDirector sharedDirector] pushScene:[Stats scene]];
 }
 -(void) timeTrial:(id)sender{
     
@@ -118,15 +124,6 @@
 -(void) settings:(id)sender{
     
 }
--(void) freeCoins:(id)sender{
-    
-    
-    //vungle
-    if ([VGVunglePub adIsAvailable]) {
-        [VGVunglePub playIncentivizedAd:[CCDirector sharedDirector].parentViewController animated:YES showClose:NO userTag:nil];
-    }
-}
-
 
 - (void) dealloc
 {

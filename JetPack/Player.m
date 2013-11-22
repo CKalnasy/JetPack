@@ -33,10 +33,24 @@
         //makes the player rectangle
         playerRect = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y - self.contentSize.height/2, /*self.contentSize.width*/ 18, self.contentSize.height);
                     //there is a bunch of white space behind jeff now
-        feetRect = CGRectMake(self.position.x - self.contentSize.width/2 + 3 , self.position.y - self.contentSize.height/2, 6, 4);
+//        feetRect = CGRectMake(self.position.x - self.contentSize.width/2 + 3 , self.position.y - self.contentSize.height/2, 6, 4);
         //change when adding in actual player
         
+        //feet!!!
+        angledFeet = [CCSprite spriteWithFile:@"Angled-Feet.png"];
+        angledFeet.anchorPoint = CGPointMake(1, 1);
+        angledFeet.position = CGPointMake(16, 0);
+        angledFeet.visible = NO;
+        [self addChild:angledFeet];
         
+        flatFeet = [CCSprite spriteWithFile:@"Flat-Feet.png"];
+        flatFeet.anchorPoint = CGPointMake(1, 1);
+        flatFeet.position = angledFeet.position;
+        [self addChild:flatFeet];
+        
+        feetRect = CGRectMake(flatFeet.position.x - flatFeet.contentSize.width, - flatFeet.contentSize.height, flatFeet.contentSize.width, flatFeet.contentSize.height);
+        
+
         //jetpack init
         NSString* path = [[NSBundle mainBundle] bundlePath];
         NSString* finalPath = [path stringByAppendingPathComponent:@"Data.plist"];
@@ -44,21 +58,20 @@
         
         NSString* jetpackName = [dataDict valueForKey:@"jetpack selected"];
         jetpack = [CCSprite spriteWithFile:jetpackName];
-        jetpack.position = CGPointMake(13.5, 19.5);
-        
+        jetpack.position = CGPointMake(13.5, 17);
         
         //jetpack flame init
         flameSmall = [CCSprite spriteWithFile:@"FlameSmall.png"];
         flameMedium = [CCSprite spriteWithFile:@"FlameMedium.png"];
         flameLarge = [CCSprite spriteWithFile:@"FlameLarge.png"];
         
-        flameSmall.position = CGPointMake(self.contentSize.width, 4.5);
+        flameSmall.position = CGPointMake(self.contentSize.width, 2);
         flameSmall.visible = NO;
         [self addChild:flameSmall];
-        flameMedium.position = CGPointMake(self.contentSize.width, 3);
+        flameMedium.position = CGPointMake(self.contentSize.width, 0.5);
         flameMedium.visible = NO;
         [self addChild:flameMedium];
-        flameLarge.position = CGPointMake(self.contentSize.width, 2);
+        flameLarge.position = CGPointMake(self.contentSize.width, -0.5);
         flameLarge.visible = NO;
         [self addChild:flameLarge];
         
@@ -157,12 +170,6 @@
 
 
 -(CGRect) playerRect{
-//    CGRect jetpackRect = CGRectMake(self.position.x - self.contentSize.width/2 + jetpack.position.x - jetpack.contentSize.width/2, self.position.y - self.contentSize.height/2 + jetpack.position.y - jetpack.contentSize.height/2, jetpack.contentSize.width, jetpack.contentSize.height);
-//    
-//    rect = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y - self.contentSize.height/2, self.contentSize.width, self.contentSize.height);
-//    
-//    CGRect ret = CGRectUnion(rect, jetpackRect);
-
     CGRect ret = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y - self.contentSize.height/2, self.contentSize.width, self.contentSize.height);
     
     return ret;
@@ -175,12 +182,12 @@
 }
 
 -(CGRect) feetRect{
-    //the entire feet
-    feetRect = CGRectMake(self.position.x - self.contentSize.width/2 + 6, self.position.y - self.contentSize.height/2, 10, 1);
+    feetRect = CGRectMake(self.position.x - self.contentSize.width/2 + flatFeet.position.x - flatFeet.contentSize.width, self.position.y - self.contentSize.height/2 - flatFeet.contentSize.height - flatFeet.position.y, flatFeet.contentSize.width, flatFeet.contentSize.height);
     
-    //half the width centered in the middle
+    //makes it so that >half the feet must touch the top of the obs
     feetRect.origin.x += feetRect.size.width/4.0;
     feetRect.size.width /= 2;
+
     
     return feetRect;
 }
@@ -205,6 +212,15 @@
         self.scaleX = -1;
         isFacingRight = YES;
     }
+}
+
+
+-(void) setAngledFeet:(BOOL)angled {
+    angledFeet.visible = angled;
+    flatFeet.visible = !angled;
+}
+-(BOOL) areFeetAngled {
+    return angledFeet.visible;
 }
 
 
