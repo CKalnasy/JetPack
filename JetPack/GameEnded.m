@@ -34,7 +34,7 @@
         
         //game ended header
         CCSprite* gameOverHeader = [CCSprite spriteWithFile:@"GAME-OVER.png"];
-        gameOverHeader.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - gameOverHeader.contentSize.height/2);
+        gameOverHeader.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - gameOverHeader.contentSize.height/2 - gameOverHeader.contentSize.height/6);
         [self addChild:gameOverHeader];
         
         

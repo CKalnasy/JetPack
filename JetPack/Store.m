@@ -12,6 +12,8 @@
 #import "MoreCoins.h"
 #import "GlobalDataManager.h"
 #import "Upgrades.h"
+#import "Jetpacks.h"
+#import "vunglepub.h"
 
 
 @implementation Store
@@ -39,28 +41,11 @@
         [self addChild:storeHeader];
         
         //back button
-        CCMenuItem* back = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(back:)];
-        CCMenu* backMenu = [CCMenu menuWithItems:back, nil];
+        back = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(back:)];
+        backMenu = [CCMenu menuWithItems:back, nil];
         backMenu.position = CGPointMake(back.contentSize.width/6 + back.contentSize.width/2, (winSizeActual.height - storeHeader.contentSize.height) - back.contentSize.width/6 - back.contentSize.height/2);
         
         [self addChild:backMenu];
-        
-        //number of coins
-        CCSprite* coinIcon = [CCSprite spriteWithFile:@"store-coin.png"];
-        coinIcon.position = CGPointMake(winSizeActual.width - backMenu.position.x + back.contentSize.width/2 - coinIcon.contentSize.width/2, backMenu.position.y);
-        [self addChild:coinIcon];
-        
-        NSNumber* numCoins = [NSNumber numberWithInt: [[GlobalDataManager sharedGlobalDataManager] totalCoins]];
-        CCLabelTTF* coins = [CCLabelTTF labelWithString:[numCoins stringValue] fontName:@"Orbitron-Light" fontSize:18];
-        coins.anchorPoint = CGPointMake(1, 0.5);
-        coins.position = CGPointMake(coinIcon.position.x - coinIcon.contentSize.width/2 - 1, coinIcon.position.y-1.5);
-        
-        coins.color = ccWHITE;
-        
-        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
-        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
-        [self addChild:stroke];
-        [self addChild:coins z:1];
         
         
         //menu
@@ -74,6 +59,8 @@
         menu.position = CGPointMake(winSizeActual.width/2, (winSizeActual.height - storeHeader.contentSize.height)/2);
         [self addChild:menu];
         
+        excPos = CGPointMake(moreCoins.position.x + moreCoins.contentSize.width/2, moreCoins.position.y + moreCoins.contentSize.height/2);
+        [self schedule:@selector(updateExclamation:)];
     }
     return self;
 }
@@ -112,13 +99,42 @@
 }
 
 
+//updates the coins
+-(void) onEnter {
+    [super onEnter];
+    
+    //number of coins
+    if (coins.isRunning) {
+        [self removeChild:coins cleanup:YES];
+        [self removeChild:stroke cleanup:YES];
+        coins = nil;
+        stroke = nil;
+    }
+    
+    CCSprite* coinIcon = [CCSprite spriteWithFile:@"store-coin.png"];
+    coinIcon.position = CGPointMake(winSizeActual.width - backMenu.position.x + back.contentSize.width/2 - coinIcon.contentSize.width/2, backMenu.position.y);
+    [self addChild:coinIcon];
+    
+    NSNumber* numCoins = [NSNumber numberWithInt: [[GlobalDataManager sharedGlobalDataManager] totalCoins]];
+    coins = [CCLabelTTF labelWithString:[numCoins stringValue] fontName:@"Orbitron-Light" fontSize:18];
+    coins.anchorPoint = CGPointMake(1, 0.5);
+    coins.position = CGPointMake(coinIcon.position.x - coinIcon.contentSize.width/2 - 1, coinIcon.position.y-1.5);
+    
+    coins.color = ccWHITE;
+    
+    stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+    stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+    [self addChild:stroke];
+    [self addChild:coins z:1];
+}
+
 
 -(void) upgrades:(id)sender{
     [[CCDirector sharedDirector] pushScene:[Upgrades scene]];
 }
 
 -(void) jetpacks:(id)sender{
-    
+    [[CCDirector sharedDirector] pushScene:[Jetpacks scene]];
 }
 
 -(void) apparel:(id)sender{
@@ -132,6 +148,19 @@
 -(void) back:(id)sender{
     [[CCDirector sharedDirector] popScene];
 }
+
+
+-(void) updateExclamation:(ccTime)delta {
+    if (exclamation.isRunning) {
+        return;
+    }
+    if ([VGVunglePub adIsAvailable]) {
+        exclamation = [CCSprite spriteWithFile:@"!.png"];
+        exclamation.position = excPos;
+        [self addChild:exclamation];
+    }
+}
+
 
 -(void) dealloc{
 }

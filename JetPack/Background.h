@@ -32,6 +32,7 @@
     CCLabelTTF* coinsLabel;
     CCLabelTTF* fuelLabel;
     CCRenderTexture* stroke;
+    CCRenderTexture* coinStroke;
     
     CGPoint playerVelocity;
     CGPoint backgroundScrollSpeed;

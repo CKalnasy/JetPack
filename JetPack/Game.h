@@ -113,6 +113,7 @@
     BOOL doDetectCollisions;
     
     BOOL added;
+    int numSecs;
 }
 
 @property (nonatomic, readwrite) BOOL isGameOver;

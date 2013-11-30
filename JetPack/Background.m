@@ -63,7 +63,7 @@
         //shows the score
         NSString* s = [NSString stringWithFormat:@"%05d",0];
         scoreLabel = [CCLabelTTF labelWithString:s fontName:@"Orbitron-Light" fontSize:20];
-		scoreLabel.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - winSizeThreeInch.height/20);
+		scoreLabel.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - winSizeThreeInch.height/20 - 3);
         [self addChild:scoreLabel z:1];
         
         stroke = [self createStroke:scoreLabel size:0.5 color:ccBLACK];
@@ -71,11 +71,19 @@
         [self addChild:stroke z:0];
         
         //shows the coins
-        coinsLabel = [CCLabelTTF labelWithString:@"0" fontName:@"Orbitron-Light" fontSize:24];
-		coinsLabel.position = CGPointMake(winSizeActual.width - winSizeActual.width/20, winSizeActual.height);
-		// Adjust the label's anchorPoint's y position to make it align with the top.
-		coinsLabel.anchorPoint = CGPointMake(1,1);
-        [self addChild:coinsLabel];
+        coinsLabel = [CCLabelTTF labelWithString:@"0" fontName:@"Orbitron-Light" fontSize:18];
+        coinsLabel.anchorPoint = CGPointMake(1, 0.5);
+		coinsLabel.position = CGPointMake(winSizeActual.width*5/6, scoreLabel.position.y);
+        [self addChild:coinsLabel z:1];
+        
+        coinStroke = [self createStroke:coinsLabel size:0.5 color:ccBLACK];
+        coinStroke.position = CGPointMake(coinsLabel.position.x - coinsLabel.contentSize.width/2, coinsLabel.position.y);
+        [self addChild:coinStroke z:0];
+        
+        CCSprite* coinIcon = [CCSprite spriteWithFile:@"store-coin.png"];
+        coinIcon.position = CGPointMake(coinsLabel.position.x + coinIcon.contentSize.width * 3/4, coinsLabel.position.y + 1.5);
+        [self addChild:coinIcon];
+        
         
         //shows the fuel left
         NSString* fuelText = [NSString stringWithFormat:@"%i", [[GlobalDataManager sharedGlobalDataManager]maxFuel]];
@@ -85,9 +93,6 @@
         [self addChild:fuelLabel];
         
         
-        
-        //[fuelLabel setFontFillColor:ccWHITE updateImage:YES];
-        //[fuelLabel enableStrokeWithColor:ccBLACK size:1 updateImage:YES];
         
         [self schedule:@selector(update:)];
         [self schedule:@selector(backgroundScrolling:)];
@@ -114,7 +119,7 @@
         stroke = nil;
         stroke = [self createStroke:scoreLabel size:0.5 color:ccBLACK];
         stroke.position = scoreLabel.position;
-        [self addChild:stroke];
+        [self addChild:stroke z:0];
         
         scoreRaw = [[GlobalDataManager sharedGlobalDataManager] scoreRaw];
     }
@@ -123,6 +128,12 @@
     if (numCoins != [GlobalDataManager numCoins]) {
         numCoins = [GlobalDataManager numCoins];
         [coinsLabel setString: [NSString  stringWithFormat:@"%i",numCoins]];
+        
+        [self removeChild:coinStroke cleanup:YES];
+        coinStroke = nil;
+        coinStroke = [self createStroke:coinsLabel size:0.5 color:ccBLACK];
+        coinStroke.position = CGPointMake(coinsLabel.position.x - coinsLabel.contentSize.width/2, coinsLabel.position.y);
+        [self addChild:coinStroke z:0];
     }
     
     //fuel
@@ -192,14 +203,7 @@
             
             //can flipX and/or flipY
             int rand = arc4random()%100 + 1;
-            if (rand <= 25) {
-                bg1.scaleX = -1;
-            }
-            else if (rand <= 50) {
-                bg1.scaleY = -1;
-            }
-            else if (rand <= 75) {
-                bg1.scaleY = -1;
+            if (rand <= 50) {
                 bg1.scaleX = -1;
             }
             
@@ -215,17 +219,9 @@
             
             //can flipX and/or flipY
             int rand = arc4random()%100 + 1;
-            if (rand <= 25) {
+            if (rand <= 50) {
                 bg2.scaleX = -1;
             }
-            else if (rand <= 50) {
-                bg2.scaleY = -1;
-            }
-            else if (rand <= 75) {
-                bg2.scaleY = -1;
-                bg2.scaleX = -1;
-            }
-
             
             bg2.position = CGPointMake(bg2.contentSize.width/2, bg1.position.y + bg1.contentSize.height);
         }
@@ -300,7 +296,7 @@
     CGPoint position = ccpSub(originalPos, positionOffset);
     
     [rt begin];
-    for (int i=0; i<360; i+=60) // you should optimize that for your needs
+    for (int i=0; i<360; i+=15) // you should optimize that for your needs
     {
         [label setPosition:ccp(bottomLeft.x + sin(CC_DEGREES_TO_RADIANS(i))*size, bottomLeft.y + cos(CC_DEGREES_TO_RADIANS(i))*size)];
         [label visit];

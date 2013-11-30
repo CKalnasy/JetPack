@@ -13,6 +13,9 @@
 #import "Store.h"
 #import "Chartboost.h"
 #import <RevMobAds/RevMobAds.h>
+#import "GlobalDataManager.h"
+#import "vunglepub.h"
+
 
 
 @implementation MainMenu
@@ -29,56 +32,69 @@
 -(id) init
 {
     if( (self=[super init])) {
-        winSize = [[CCDirector sharedDirector]winSize];
+        winSize = CGSizeMake(320, 480);
+        winSizeActual = [[CCDirector sharedDirector] winSize];
         
         //background init
         CCSprite* bg = [CCSprite spriteWithFile:@"base background.png"];
         bg.anchorPoint = CGPointMake(0, 0);
         [self addChild:bg z:-10];
         
-        //player init
-        NSString* path = [[NSBundle mainBundle] bundlePath];
-        NSString* finalPath = [path stringByAppendingPathComponent:@"Data.plist"];
-        NSDictionary* dataDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
+        //header init
+        CCSprite* header = [CCSprite spriteWithFile:@"store-header.png"];
+        header.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - header.contentSize.height/2 - 20);
+        [self addChild:header];
         
-        NSString* color = [dataDict valueForKey:@"clothes"];
+        //player init
+        NSString* color = [GlobalDataManager playerColorWithDict];
         NSString* name = [NSString stringWithFormat:@"%@%@%@", @"Jeff-", color, @".png"];
         
         
         Player* player = [Player player:name];
-        player.position = ccp(winSize.width/2, player.contentSize.height/2);
+        player.position = ccp(winSizeActual.width/2, player.contentSize.height/2 + 2.5);
         [self addChild:player z:1];
         
         
-        CCMenuItemImage *classic = [CCMenuItemImage itemWithNormalImage:@"Classic.png" selectedImage:@"Push-Classic.png" target:self selector:@selector(classic:)];
+        classic = [CCMenuItemImage itemWithNormalImage:@"Classic.png" selectedImage:@"Push-Classic.png" target:self selector:@selector(classic:)];
         
-        CCMenuItemImage *leaderboards = [CCMenuItemImage itemWithNormalImage:@"Leaderboards.png" selectedImage:@"Push-Leaderboards.png" target:self selector:@selector(leaderboards:)];
+        leaderboards = [CCMenuItemImage itemWithNormalImage:@"Leaderboards.png" selectedImage:@"Push-Leaderboards.png" target:self selector:@selector(leaderboards:)];
         
-        CCMenuItemImage *store = [CCMenuItemImage itemWithNormalImage:@"Store.png" selectedImage:@"Push-Store.png" target:self selector:@selector(store:)];
+        store = [CCMenuItemImage itemWithNormalImage:@"Store.png" selectedImage:@"Push-Store.png" target:self selector:@selector(store:)];
         
-        CCMenuItemImage *stats = [CCMenuItemImage itemWithNormalImage:@"Stats.png" selectedImage:@"Push-Stats.png" target:self selector:@selector(stats:)];
+        stats = [CCMenuItemImage itemWithNormalImage:@"Stats.png" selectedImage:@"Push-Stats.png" target:self selector:@selector(stats:)];
         
-        CCMenuItemImage *timeTrial = [CCMenuItemImage itemWithNormalImage:@"Time-trial.png" selectedImage:@"Push-Time-trial.png" target:self selector:@selector(timeTrial:)];
+        timeTrial = [CCMenuItemImage itemWithNormalImage:@"Time-trial.png" selectedImage:@"Push-Time-trial.png" target:self selector:@selector(timeTrial:)];
         
-        CCMenuItemImage *settings = [CCMenuItemImage itemWithNormalImage:@"Settings.png" selectedImage:@"Push-Settings.png" target:self selector:@selector(settings:)];
+        settings = [CCMenuItemImage itemWithNormalImage:@"Settings.png" selectedImage:@"Push-Settings.png" target:self selector:@selector(settings:)];
         
         
-        //CCMenu *menu = [CCMenu menuWithItems:classic, timeTrial, leaderboards, store, stats, settings, nil];
-        //[menu alignItemsVertically];
+//        CCMenu *menu = [CCMenu menuWithItems:classic, timeTrial, leaderboards, store, stats, settings, nil];
+//        [menu alignItemsVerticallyWithPadding:classic.contentSize.height/2];
+//        menu.position = CGPointMake(winSizeActual.width/2, header.position.y - header.contentSize.height/2 - 3*(classic.contentSize.height/2 + classic.contentSize.height) - classic.contentSize.height/2);
+//        [self addChild:menu];
         
-        CCMenu* menuLeft = [CCMenu menuWithItems:classic, store, stats, nil];
+        float padding;
+        if (winSizeActual.height == 480) {
+            padding = classic.contentSize.height*4/3;
+        }
+        else {
+            padding = classic.contentSize.height*5/3;
+        }
         
-        [menuLeft alignItemsVerticallyWithPadding:classic.contentSize.height*2];
-        menuLeft.position = CGPointMake(winSize.width/4, winSize.height*0.4 + classic.contentSize.height*1.5);
+        CCMenu* menuLeft = [CCMenu menuWithItems:classic, store, leaderboards, nil];
+        
+        [menuLeft alignItemsVerticallyWithPadding:padding];
+        menuLeft.position = CGPointMake(winSizeActual.width/4, header.position.y - header.contentSize.height/2 - 3*(classic.contentSize.height/2 + classic.contentSize.height) - classic.contentSize.height*(1.0/6.0));
         
         [self addChild:menuLeft];
         
         
-        CCMenu* menuRight = [CCMenu menuWithItems:timeTrial, leaderboards, settings, nil];
+        CCMenu* menuRight = [CCMenu menuWithItems:timeTrial, stats, settings, nil];
         
-        [menuRight alignItemsVerticallyWithPadding:timeTrial.contentSize.height*2];
-        menuRight.position = CGPointMake(winSize.width*3/4, winSize.height*0.4);
+        [menuRight alignItemsVerticallyWithPadding:padding];
+        menuRight.position = CGPointMake(winSizeActual.width*3/4, header.position.y - header.contentSize.height/2 - 3*(classic.contentSize.height/2 + classic.contentSize.height) - classic.contentSize.height*(1.0/6.0));
         [self addChild:menuRight];
+        
         
         
 //        CCMenu* menuStore = [CCMenu menuWithItems:store, nil];
@@ -100,16 +116,29 @@
 //        menuSettings.position = CGPointMake(winSize.width/3, winSize.width/3);
 //        [self addChild:menuSettings];
         
+        
+        [self schedule:@selector(updateExclamation:)];
     }
 	return self;
 }
+
+
+
+-(void) onEnter {
+    [super onEnter];
+    
+    
+    [[GameKitHelper sharedGameKitHelper]
+     authenticateLocalPlayer];
+}
+
 
 
 -(void) classic:(id)sender{
     [[CCDirector sharedDirector] replaceScene:[Game scene]];
 }
 -(void) leaderboards:(id)sender{
-    
+    [[GameKitHelper sharedGameKitHelper] showGameCenterViewController];
 }
 -(void) store:(id)sender{
     [[CCDirector sharedDirector] pushScene:[Store scene]];
@@ -125,23 +154,26 @@
     
 }
 
+
+-(void) updateExclamation:(ccTime)delta {
+    if (exclamationPoint.isRunning) {
+        return;
+    }
+    
+    if ([VGVunglePub adIsAvailable]) {
+        exclamationPoint = [CCSprite spriteWithFile:@"!.png"];
+        exclamationPoint.position = CGPointMake(store.position.x + store.contentSize.width/2, store.position.y + store.contentSize.height/2);
+        [self addChild:exclamationPoint];
+    }
+    
+}
+
+
+
 - (void) dealloc
 {
 	//[super dealloc];
 }
 
 
-
 @end
-
-
-
-/*CCLabelTTF* l = [CCLabelTTF labelWithString:@"THIS IS A TEST" fontName:@"arial" fontSize:10];
- l.position = CGPointMake(winSize.width / 2, winSize.width / 2);
- 
- CCRenderTexture* rend = [CCLabelTTF createStroke:l size:1 color:ccBLACK];
- rend.position = l.position;
- 
- [self addChild:rend];
- [self addChild:l];*/
-

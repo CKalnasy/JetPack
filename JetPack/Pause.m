@@ -23,7 +23,7 @@
 -(id) init{
     if( (self=[super init])) {
         //menu with resume, quit and sound on/off buttons
-        CCMenuItem* resume = [CCMenuItemImage itemWithNormalImage:@"HowToPlay.png" selectedImage:@"HowToPlay.png" target:self selector:@selector(resumeGame:)];
+        CCMenuItem* resume = [CCMenuItemImage itemWithNormalImage:@"Classic.png" selectedImage:@"Classic.png" target:self selector:@selector(resumeGame:)];
         CCMenuItem* soundSwap = [CCMenuItemImage itemWithNormalImage:@"Store.png" selectedImage:@"Store.png" target:self selector:@selector(soundSwap:)];
         CCMenuItem* quit = [CCMenuItemImage itemWithNormalImage:@"Stats.png" selectedImage:@"Stats.png" target:self selector:@selector(quit:)];
         

@@ -409,6 +409,7 @@
     
     if (numCoins >= price) {
         //todo: add "buy" button to middle of screen
+        //if they touch anywhere other than the "buy" button then remove the buy button
     }
     else {
         //todo: add "you don't have enough coins, would you like to get more?"

@@ -9,6 +9,17 @@
 #import "MoreCoins.h"
 #import "GlobalDataManager.h"
 #import "vunglepub.h"
+#import <StoreKit/StoreKit.h>
+#import "JetpackIAPHelper.h"
+#import "InAppPurchaseManager.h"
+
+
+
+@interface MoreCoins () {
+    NSArray *_products;
+    NSNumberFormatter * _priceFormatter;
+}
+@end
 
 
 @implementation MoreCoins
@@ -26,6 +37,13 @@
     if( (self=[super init])) {
         winSizeActual = [[CCDirector sharedDirector] winSize];
         winSize = CGSizeMake(320, 480);
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(productPurchased:) name:IAPHelperProductPurchasedNotification object:nil];
+        [self reloads];
+        
+        _priceFormatter = [[NSNumberFormatter alloc] init];
+        [_priceFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
+        [_priceFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
         
         CCSprite* background = [CCSprite spriteWithFile:@"base background.png"];
         background.anchorPoint = CGPointMake(0.5, 0);
@@ -67,18 +85,66 @@
         CCMenuItem* moreCoins2 = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(buyMoreCoins2:)];
         CCMenuItem* moreCoins3 = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(buyMoreCoins3:)];
         
-        CCMenu* moreCoins1Menu = [CCMenu menuWithItems:moreCoins1, nil];
-        CCMenu* moreCoins2Menu = [CCMenu menuWithItems:moreCoins2, nil];
-        CCMenu* moreCoins3Menu = [CCMenu menuWithItems:moreCoins3, nil];
+//        moreCoins1Menu = [CCMenu menuWithItems:moreCoins1, nil];
+//        moreCoins2Menu = [CCMenu menuWithItems:moreCoins2, nil];
+//        moreCoins3Menu = [CCMenu menuWithItems:moreCoins3, nil];
         
         
-        moreCoins1Menu.position = CGPointMake(winSizeActual.width - moreCoins1.contentSize.width/2 - moreCoins1.contentSize.width/5, (backMenu.position.y) * (4.0/5));
-        moreCoins2Menu.position = CGPointMake(winSizeActual.width - moreCoins2.contentSize.width/2 - moreCoins2.contentSize.width/5, (backMenu.position.y) * (3.0/5));
-        moreCoins3Menu.position = CGPointMake(winSizeActual.width - moreCoins3.contentSize.width/2 - moreCoins3.contentSize.width/5, (backMenu.position.y) * (2.0/5));
         
-        [self addChild:moreCoins1Menu];
-        [self addChild:moreCoins2Menu];
-        [self addChild:moreCoins3Menu];
+//        moreCoins1Menu.enabled = NO;
+//        moreCoins2Menu.enabled = NO;
+//        moreCoins3Menu.enabled = NO;
+        
+        
+        
+//        SKProduct* product1 = (SKProduct*)_products[0];
+//        NSString* price1 = [_priceFormatter stringFromNumber:product1.price];
+//        
+//        if ([[JetpackIAPHelper sharedInstance] productPurchased:product1.productIdentifier]) {
+//            //todo: already bought
+//        }
+//        else {
+//            CCLabelTTF* moreCoins1Label = [CCLabelTTF labelWithString:price1 fontName:@"arial" fontSize:18];
+//            moreCoins1 = [CCMenuItemLabel itemWithLabel:moreCoins1Label target:self selector:@selector(buyMoreCoins1:)];
+//        }
+//        
+//        SKProduct* product2 = (SKProduct*)_products[1];
+//        NSString* price2 = [_priceFormatter stringFromNumber:product2.price];
+//        
+//        if ([[JetpackIAPHelper sharedInstance] productPurchased:product2.productIdentifier]) {
+//            //todo: already bought
+//        }
+//        else {
+//            CCLabelTTF* moreCoins2Label = [CCLabelTTF labelWithString:price2 fontName:@"arial" fontSize:18];
+//            moreCoins2 = [CCMenuItemLabel itemWithLabel:moreCoins2Label target:self selector:@selector(buyMoreCoins2:)];
+//        }
+//        
+//        SKProduct* product3 = (SKProduct*)_products[2];
+//        NSString* price3 = [_priceFormatter stringFromNumber:product3.price];
+//        
+//        if ([[JetpackIAPHelper sharedInstance] productPurchased:product3.productIdentifier]) {
+//            //todo: already bought
+//        }
+//        else {
+//            CCLabelTTF* moreCoins3Label = [CCLabelTTF labelWithString:price3 fontName:@"arial" fontSize:18];
+//            moreCoins3 = [CCMenuItemLabel itemWithLabel:moreCoins3Label target:self selector:@selector(buyMoreCoins3:)];
+//        }
+//        
+//        
+//        
+//        
+//        
+//        moreCoins1Menu = [CCMenu menuWithItems:moreCoins1, nil];
+//        moreCoins2Menu = [CCMenu menuWithItems:moreCoins2, nil];
+//        moreCoins3Menu = [CCMenu menuWithItems:moreCoins3, nil];
+//        
+//        moreCoins1Menu.position = CGPointMake(winSizeActual.width - moreCoins1.contentSize.width/2 - moreCoins1.contentSize.width/5, (backMenu.position.y) * (4.0/5));
+//        moreCoins2Menu.position = CGPointMake(winSizeActual.width - moreCoins2.contentSize.width/2 - moreCoins2.contentSize.width/5, (backMenu.position.y) * (3.0/5));
+//        moreCoins3Menu.position = CGPointMake(winSizeActual.width - moreCoins3.contentSize.width/2 - moreCoins3.contentSize.width/5, (backMenu.position.y) * (2.0/5));
+//        
+//        [self addChild:moreCoins1Menu];
+//        [self addChild:moreCoins2Menu];
+//        [self addChild:moreCoins3Menu];
         
         
         //free coins button
@@ -88,25 +154,72 @@
         [self addChild:freeCoinsMenu];
         
         
-        //todo: if ad is available, put exclamation mark in upper left corner
+        //in app purchase manager init
+//        [[InAppPurchaseManager sharedInAppManager] loadStore];
+        
+
+        excPos = CGPointMake(freeCoinsMenu.position.x + freeCoins.contentSize.width/2, freeCoinsMenu.position.y + freeCoins.contentSize.height/2);
+        [self schedule:@selector(updateExclamation:)];
     }
     return self;
 }
 
 
 
+
+
+-(void) updateExclamation:(ccTime)delta {
+    if (exclamation.isRunning) {
+        return;
+    }
+    if ([VGVunglePub adIsAvailable]) {
+        exclamation = [CCSprite spriteWithFile:@"!.png"];
+        exclamation.position = excPos;
+        [self addChild:exclamation];
+    }
+}
+
+
 -(void) back:(id)sender {
     [[CCDirector sharedDirector] popScene];
 }
 
+
+
 -(void) buyMoreCoins1:(id)sender {
+    if (!moreCoins1Menu.enabled) {
+        return;
+    }
     
+    SKProduct *product = _products[0];
+    
+    NSLog(@"Buying %@...", product.productIdentifier);
+    [[JetpackIAPHelper sharedInstance] buyProduct:product];
 }
 -(void) buyMoreCoins2:(id)sender {
+    if (!moreCoins2Menu.enabled) {
+        return;
+    }
+    
+    [[InAppPurchaseManager sharedInAppManager] purchaseMoreCoinsTwo];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(moreCoins2:) name:kInAppPurchaseManagerTransactionSucceededNotification object:nil];
+    
+    SKProduct *product = _products[1];
+    
+    NSLog(@"Buying %@...", product.productIdentifier);
+    [[JetpackIAPHelper sharedInstance] buyProduct:product];
+    
     
 }
 -(void) buyMoreCoins3:(id)sender {
+    if (!moreCoins3Menu.enabled) {
+        return;
+    }
     
+    SKProduct *product = _products[2];
+    
+    NSLog(@"Buying %@...", product.productIdentifier);
+    [[JetpackIAPHelper sharedInstance] buyProduct:product];
 }
 -(void) freeCoins:(id)sender {
     //vungle
@@ -114,6 +227,18 @@
         [VGVunglePub playIncentivizedAd:[CCDirector sharedDirector].parentViewController animated:YES showClose:NO userTag:nil];
     }
 }
+
+
+-(void) purchase:(int)num forPrice:(NSDecimalNumber*) price {
+    
+    //todo: display buy button
+}
+
+
++(void) increaseCoins:(int) num {
+    
+}
+
 
 
 -(CCRenderTexture*) createStroke: (CCLabelTTF*) label   size:(float)size   color:(ccColor3B)cor
@@ -152,10 +277,51 @@
 
 
 -(void) adClosed {
-    [[GlobalDataManager sharedGlobalDataManager] setTotalCoins:[[GlobalDataManager sharedGlobalDataManager]totalCoins] + NUMBER_OF_COINS_PER_VIEW];
-    [coins setString: [NSString stringWithFormat:@"%d",[[GlobalDataManager sharedGlobalDataManager] totalCoins]]];
+    [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] + NUMBER_OF_COINS_PER_VIEW];
+    [coins setString: [NSString stringWithFormat:@"%d",[GlobalDataManager totalCoinsWithDict]]];
+    
+    [self removeChild:stroke cleanup:YES];
+    stroke = nil;
+    stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+    stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+    [self addChild:stroke];
+}
+
+
+-(void) reloads {
+    _products = nil;
+    [[JetpackIAPHelper sharedInstance] requestProductsWithCompletionHandler:^(BOOL success, NSArray *products) {
+        if (success) {
+            _products = products;
+        }
+    }];
+}
+
+
+- (void)onExit {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)productPurchased:(NSNotification *)notification {
+    
+    NSString * productIdentifier = notification.object;
+    [_products enumerateObjectsUsingBlock:^(SKProduct * product, NSUInteger idx, BOOL *stop) {
+        if ([product.productIdentifier isEqualToString:productIdentifier]) {
+            //[self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:idx inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
+            *stop = YES;
+        }
+    }];
     
 }
+
+
+
+
+
+
+
+
+
 
 
 @end

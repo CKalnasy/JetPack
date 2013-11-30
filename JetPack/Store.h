@@ -12,8 +12,14 @@
 @interface Store : CCLayer {
     CGSize winSize;
     CGSize winSizeActual;
-    CCRenderTexture* stroke;
     
+    CCRenderTexture* stroke;
+    CCMenu* backMenu;
+    CCMenuItem* back;
+    CCLabelTTF* coins;
+    
+    CCSprite* exclamation;
+    CGPoint excPos;
 }
 
 +(CCScene *) scene;

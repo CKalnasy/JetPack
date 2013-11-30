@@ -10,7 +10,7 @@
 
 
  @implementation GlobalDataManager
-@synthesize scoreRaw, scoreActual, fuel, numCoins, totalCoins, totalGames, highScore, cb, player, isPaused, maxFuel, playerColor;
+@synthesize scoreRaw, scoreActual, fuel, numCoins, totalCoins, totalGames, highScore, cb, player, isPaused, maxFuel, playerColor, numSecondsBoost, numSecondsDoublePoints, numSecondsInvy;
 
 static GlobalDataManager *sharedGlobalDataManager = nil;
 
@@ -51,53 +51,68 @@ static GlobalDataManager *sharedGlobalDataManager = nil;
     [GlobalDataManager sharedGlobalDataManager].fuel = num;
 }
 
-+(int) maxFuel{
++(int) maxFuelWithDict{
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
+    
+    [GlobalDataManager sharedGlobalDataManager].maxFuel = [[dataDict valueForKey:@"max fuel"]integerValue];
     return [GlobalDataManager sharedGlobalDataManager].maxFuel;
 }
-+(void) setMaxFuel:(int)num{
-    [GlobalDataManager sharedGlobalDataManager].fuel = num;
++(void) setMaxFuelWithDict:(int)num{
+    [GlobalDataManager sharedGlobalDataManager].maxFuel = num;
+    
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
+
+    [dataDict setObject:[NSNumber numberWithInteger:num] forKey:@"max fuel"];
+    [dataDict writeToFile:plistPath atomically:YES];
 }
 
-+(int) totalCoins{
++(int) totalCoinsWithDict{
     return [GlobalDataManager sharedGlobalDataManager].totalCoins;
 }
-+(void) setTotalCoins: (int)num{
-    [GlobalDataManager sharedGlobalDataManager].totalCoins += num;
++(void) setTotalCoinsWithDict:(int)num {
+    [GlobalDataManager sharedGlobalDataManager].totalCoins = num;
     
     //stats.plist init
-    NSString* path = [[NSBundle mainBundle] bundlePath];
-    NSString* finalPath =[path stringByAppendingPathComponent:@"Stats.plist"];
-    NSDictionary* statsDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Stats.plist"];
+    NSMutableDictionary* statsDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
     
     [statsDict setValue:[NSNumber numberWithInt:num] forKey:@"coins collected"];
+    [statsDict writeToFile:plistPath atomically:YES];
 }
 
-+(int) totalGames{
++(int) totalGamesWithDict{
     return [GlobalDataManager sharedGlobalDataManager].totalGames;
 }
-+(void) setTotalGames: (int)num{
++(void) setTotalGamesWithDict:(int)num {
     [GlobalDataManager sharedGlobalDataManager].totalGames = num;
     
     //data.plist init
-    NSString* path = [[NSBundle mainBundle] bundlePath];
-    NSString* finalPath = [path stringByAppendingPathComponent:@"Data.plist"];
-    NSDictionary* dataDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
     
     [dataDict setValue:[NSNumber numberWithInt:num] forKey:@"total games"];
+    [dataDict writeToFile:plistPath atomically:YES];
 }
 
-+(int) highScore{
++(int) highScoreWithDict {
     return [GlobalDataManager sharedGlobalDataManager].highScore;
 }
-+(void) setHighScore: (int)num{
++(void) setHighScoreWithDict:(int)num {
     [GlobalDataManager sharedGlobalDataManager].highScore = num;
     
     //data.plist init
-    NSString* path = [[NSBundle mainBundle] bundlePath];
-    NSString* finalPath = [path stringByAppendingPathComponent:@"Data.plist"];
-    NSDictionary* dataDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
     
     [dataDict setValue:[NSNumber numberWithInt:num] forKey:@"high score"];
+    [dataDict writeToFile:plistPath atomically:YES];
 }
 
 
@@ -122,17 +137,94 @@ static GlobalDataManager *sharedGlobalDataManager = nil;
     [GlobalDataManager sharedGlobalDataManager].isPaused = _isPaused;
 }
 
-+(NSString*) playerColor {
++(NSString*) playerColorWithDict {
     //data.plist init
-    NSString* path = [[NSBundle mainBundle] bundlePath];
-    NSString* finalPath = [path stringByAppendingPathComponent:@"Data.plist"];
-    NSDictionary* dataDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
     
-    NSString* color = [[dataDict objectForKey:@"clothes"] stringValue];
+    NSString* color = [dataDict objectForKey:@"clothes"];
     [GlobalDataManager sharedGlobalDataManager].playerColor = color;
     
     return color;
 }
++(void) setPlayerColorWithDict:(NSString*)name {
+    //data.plist init
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
+    
+    [dataDict setObject:name forKey:@"clothes"];
+    [dataDict writeToFile:plistPath atomically:YES];
+    
+    [GlobalDataManager sharedGlobalDataManager].playerColor = name;
+}
+
+
++(int) numSecondsBoostWithDict {
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
+    
+    [GlobalDataManager sharedGlobalDataManager].numSecondsBoost = [[dataDict valueForKey:@"max seconds boost"]integerValue];
+    return [GlobalDataManager sharedGlobalDataManager].numSecondsBoost;
+}
++(void) setNumSecondsBoostWithDict:(int)num {
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
+    
+    [dataDict setObject:[NSNumber numberWithInteger:num] forKey:@"max seconds boost"];
+    [dataDict writeToFile:plistPath atomically:YES];
+    
+    [GlobalDataManager sharedGlobalDataManager].numSecondsBoost = num;
+}
+
+
++(int) numSecondsDoublePointsWithDict {
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
+    
+    [GlobalDataManager sharedGlobalDataManager].numSecondsDoublePoints = [[dataDict valueForKey:@"max seconds double points"]integerValue];
+    return [GlobalDataManager sharedGlobalDataManager].numSecondsDoublePoints;
+}
++(void) setNumSecondsDoublePointsWithDict:(int)num {
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
+    
+    [dataDict setObject:[NSNumber numberWithInteger:num] forKey:@"max seconds double points"];
+    [dataDict writeToFile:plistPath atomically:YES];
+    
+    [GlobalDataManager sharedGlobalDataManager].numSecondsDoublePoints = num;
+}
+
+
++(int) numSecondsInvyWithDict {
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
+    
+    [GlobalDataManager sharedGlobalDataManager].numSecondsInvy = [[dataDict valueForKey:@"max seconds invy"]integerValue];
+    return [GlobalDataManager sharedGlobalDataManager].numSecondsInvy;
+}
++(void) setNumSecondsInvyWithDict:(int)num {
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
+
+    [dataDict setObject:[NSNumber numberWithInteger:num] forKey:@"max seconds invy"];
+    [dataDict writeToFile:plistPath atomically:YES];
+    
+    [GlobalDataManager sharedGlobalDataManager].numSecondsInvy = num;
+    
+    NSLog(@"%@",dataDict);
+}
+
+
+
+
 
 - (void) dealloc
 {

@@ -27,6 +27,10 @@
     BOOL isPaused;
     NSString* playerColor;
     
+    int numSecondsBoost;
+    int numSecondsDoublePoints;
+    int numSecondsInvy;
+    
     Chartboost* cb;
 }
 
@@ -42,6 +46,9 @@
 @property (nonatomic, readwrite) BOOL isPaused;
 @property (nonatomic, readwrite) int maxFuel;
 @property (nonatomic, readwrite) NSString* playerColor;
+@property (nonatomic, readwrite) int numSecondsBoost;
+@property (nonatomic, readwrite) int numSecondsDoublePoints;
+@property (nonatomic, readwrite) int numSecondsInvy;
 
 
 
@@ -59,17 +66,17 @@
 +(int) fuel;
 +(void) setFuel: (int)num;
 
-+(int) maxFuel;
-+(void) setMaxFuel: (int)num;
++(int) maxFuelWithDict;
++(void) setMaxFuelWithDict: (int)num;
 
-+(int) totalCoins;
-+(void) setTotalCoins: (int)num;
++(int) totalCoinsWithDict;
++(void) setTotalCoinsWithDict: (int)num;
 
-+(int) totalGames;
-+(void) setTotalGames: (int)num;
++(int) totalGamesWithDict;
++(void) setTotalGamesWithDict: (int)num;
 
-+(int) highScore;
-+(void) setHighScore: (int)num;
++(int) highScoreWithDict;
++(void) setHighScoreWithDict: (int)num;
 
 +(Chartboost*) cb;
 +(void) setCB: (Chartboost*)cbv;
@@ -80,6 +87,17 @@
 +(BOOL) isPaused;
 +(void) setIsPaused:(BOOL)_isPaused;
 
-+(NSString*) playerColor;
++(NSString*) playerColorWithDict;
++(void) setPlayerColorWithDict:(NSString*)name;
+
++(int) numSecondsBoostWithDict;
++(void) setNumSecondsBoostWithDict:(int)num;
+
++(int) numSecondsDoublePointsWithDict;
++(void) setNumSecondsDoublePointsWithDict:(int)num;
+
++(int) numSecondsInvyWithDict;
++(void) setNumSecondsInvyWithDict:(int)num;
+
 
 @end

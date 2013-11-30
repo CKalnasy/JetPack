@@ -19,8 +19,13 @@
 #define FUEL_STAGE_THREE 600
 #define FUEL_STAGE_FOUR 700
 
+#define POWER_UP_COST_ONE 500
+#define POWER_UP_COST_TWO 1000
+#define POWER_UP_COST_THREE 2000
+
+
 #define HEADER_SIZE 67
-#define POS_OFFSET 5
+#define POS_OFFSET 4
 
 @interface Upgrades : CCLayer {
     CGSize winSize;

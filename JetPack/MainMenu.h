@@ -13,6 +13,17 @@
 
 @interface MainMenu : CCLayer {
     CGSize winSize;
+    CGSize winSizeActual;
+    
+    CCSprite* exclamationPoint;
+    CGPoint excPos;
+    
+    CCMenuItemImage *classic;
+    CCMenuItemImage *leaderboards;
+    CCMenuItemImage *store;
+    CCMenuItemImage *stats;
+    CCMenuItemImage *timeTrial;
+    CCMenuItemImage *settings;
 }
 
 +(CCScene *) scene;

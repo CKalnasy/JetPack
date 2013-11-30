@@ -25,11 +25,6 @@
         winSizeActual = [[CCDirector sharedDirector] winSize];
         winSize = CGSizeMake(320, 480);
         
-        //data.plist init
-        NSString* path = [[NSBundle mainBundle] bundlePath];
-        NSString* finalPath = [path stringByAppendingPathComponent:@"Data.plist"];
-        NSDictionary* dataDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
-        
         CCSprite* background = [CCSprite spriteWithFile:@"base background.png"];
         background.anchorPoint = CGPointMake(0.5, 0);
         background.position = CGPointMake(background.contentSize.width/2, 0);
@@ -50,7 +45,7 @@
         CCSprite* coinIcon = [CCSprite spriteWithFile:@"store-coin.png"];
         coinIcon.position = CGPointMake(winSizeActual.width - backMenu.position.x + back.contentSize.width/2 - coinIcon.contentSize.width/2, backMenu.position.y);
         [self addChild:coinIcon];
-        NSNumber* numCoins = [NSNumber numberWithInt: [[GlobalDataManager sharedGlobalDataManager] totalCoins]];
+        NSNumber* numCoins = [NSNumber numberWithInt: [GlobalDataManager totalCoinsWithDict]];
         coins = [CCLabelTTF labelWithString:[numCoins stringValue] fontName:@"Orbitron-Light" fontSize:18];
         coins.anchorPoint = CGPointMake(1, 0.5);
         coins.position = CGPointMake(coinIcon.position.x - coinIcon.contentSize.width/2 - 1, coinIcon.position.y-1.5);
@@ -74,7 +69,7 @@
         fuelMenu.position = CGPointMake(winSizeActual.width - fuelIcon.position.x, fuelIcon.position.y);
         [self addChild:fuelMenu];
         
-        int maxFuel = [[dataDict valueForKey:@"max fuel"]integerValue];
+        int maxFuel = [GlobalDataManager maxFuelWithDict];
         if (maxFuel == FUEL_STAGE_ONE) {
             fuelMeter = [CCSprite spriteWithFile:@"Progress-Bar-1.png"];
         }
@@ -96,6 +91,16 @@
         fuelLabel.position = CGPointMake(fuelMeter.position.x, 4*pos + POS_OFFSET);
         [self addChild:fuelLabel];
         
+        CCLabelTTF* descFuel = [CCLabelTTF labelWithString:@"Increase fuel tank capacity" fontName:@"Orbitron-Light" fontSize:14];
+        descFuel.anchorPoint = CGPointMake(0, 0.5);
+        descFuel.position = CGPointMake(fuelMeter.position.x - descFuel.contentSize.width/2, fuelMeter.position.y - fuelMeter.contentSize.height*7/10 - descFuel.contentSize.height/2);
+        descFuel.color = ccWHITE;
+        [self addChild:descFuel z:1];
+        
+        CCRenderTexture* descFuelStroke = [self createStroke:descFuel size:0.5 color:ccBLACK];
+        descFuelStroke.position = CGPointMake(descFuel.position.x + descFuelStroke.contentSize.width/2, descFuel.position.y);
+        [self addChild:descFuelStroke z:0];
+        
         
         //boost upgrade
         CCSprite* boostIcon = [CCSprite spriteWithFile:@"Boost.png"];
@@ -107,7 +112,7 @@
         boostMenu.position = CGPointMake(winSizeActual.width - boostIcon.position.x, boostIcon.position.y);
         [self addChild:boostMenu];
         
-        int numSecondsBoost = [[dataDict valueForKey:@"max seconds boost"]integerValue];
+        int numSecondsBoost = [GlobalDataManager numSecondsBoostWithDict];
         if (numSecondsBoost == POWER_UP_STAGE_ONE) {
             boostMeter = [CCSprite spriteWithFile:@"Progress-Bar-1.png"];
         }
@@ -129,6 +134,16 @@
         boostLabel.position = CGPointMake(boostMeter.position.x, 3*pos + POS_OFFSET);
         [self addChild:boostLabel];
         
+        CCLabelTTF* descBoost = [CCLabelTTF labelWithString:@"Increase duration of Boost" fontName:@"Orbitron-Light" fontSize:14];
+        descBoost.anchorPoint = CGPointMake(0, 0.5);
+        descBoost.position = CGPointMake(boostMeter.position.x - descBoost.contentSize.width/2, boostMeter.position.y - boostMeter.contentSize.height*7/10 - descBoost.contentSize.height/2);
+        descBoost.color = ccWHITE;
+        [self addChild:descBoost z:1];
+        
+        CCRenderTexture* descBoostStroke = [self createStroke:descBoost size:0.5 color:ccBLACK];
+        descBoostStroke.position = CGPointMake(descBoost.position.x + descBoostStroke.contentSize.width/2, descBoost.position.y);
+        [self addChild:descBoostStroke z:0];
+        
         
         //double points upgrade
         CCSprite* doublePointsIcon = [CCSprite spriteWithFile:@"DoublePoints.png"];
@@ -140,7 +155,7 @@
         doublePointsMenu.position = CGPointMake(winSizeActual.width - doublePointsIcon.position.x, doublePointsIcon.position.y);
         [self addChild:doublePointsMenu];
         
-        int numSecondsDoublePoints = [[dataDict valueForKey:@"max seconds double points"]integerValue];
+        int numSecondsDoublePoints = [GlobalDataManager numSecondsDoublePointsWithDict];
         if (numSecondsDoublePoints == POWER_UP_STAGE_ONE) {
             doublePointsMeter = [CCSprite spriteWithFile:@"Progress-Bar-1.png"];
         }
@@ -161,6 +176,16 @@
         doublePointsLabel.anchorPoint = CGPointMake(0.5, 0);
         doublePointsLabel.position = CGPointMake(doublePointsMeter.position.x, 2*pos + POS_OFFSET);
         [self addChild:doublePointsLabel];
+        
+        CCLabelTTF* descDoublePoints = [CCLabelTTF labelWithString:@"Increase duration of Double Points" fontName:@"Orbitron-Light" fontSize:14];
+        descDoublePoints.anchorPoint = CGPointMake(0, 0.5);
+        descDoublePoints.position = CGPointMake(doublePointsMeter.position.x - descDoublePoints.contentSize.width/2, doublePointsMeter.position.y - doublePointsMeter.contentSize.height*7/10 - descDoublePoints.contentSize.height/2);
+        descDoublePoints.color = ccWHITE;
+        [self addChild:descDoublePoints z:1];
+        
+        CCRenderTexture* descDoublePointsStroke = [self createStroke:descDoublePoints size:0.5 color:ccBLACK];
+        descDoublePointsStroke.position = CGPointMake(descDoublePoints.position.x + descDoublePointsStroke.contentSize.width/2, descDoublePoints.position.y);
+        [self addChild:descDoublePointsStroke z:0];
 
         
         //invy upgrade
@@ -173,7 +198,7 @@
         invyMenu.position = CGPointMake(winSizeActual.width - invyIcon.position.x, invyIcon.position.y);
         [self addChild:invyMenu];
         
-        int numSecondsInvy = [[dataDict valueForKey:@"max seconds invy"]integerValue];
+        int numSecondsInvy = [GlobalDataManager numSecondsInvyWithDict];
         if (numSecondsInvy == POWER_UP_STAGE_ONE) {
             invyMeter = [CCSprite spriteWithFile:@"Progress-Bar-1.png"];
         }
@@ -194,6 +219,18 @@
         invyLabel.anchorPoint = CGPointMake(0.5, 0);
         invyLabel.position = CGPointMake(invyMeter.position.x, pos + POS_OFFSET);
         [self addChild:invyLabel];
+        
+        CCLabelTTF* descInvy = [CCLabelTTF labelWithString:@"Increase duration of Invincibility" fontName:@"Orbitron-Light" fontSize:14];
+        descInvy.anchorPoint = CGPointMake(0, 0.5);
+        descInvy.position = CGPointMake(invyMeter.position.x - descInvy.contentSize.width/2, invyMeter.position.y - invyMeter.contentSize.height*7/10 - descInvy.contentSize.height/2);
+        descInvy.color = ccWHITE;
+        [self addChild:descInvy z:1];
+        
+        CCRenderTexture* descInvyStroke = [self createStroke:descInvy size:0.5 color:ccBLACK];
+        descInvyStroke.position = CGPointMake(descInvy.position.x + descInvyStroke.contentSize.width/2, descInvy.position.y);
+        [self addChild:descInvyStroke z:0];
+        
+        
 
     }
     return self;
@@ -205,16 +242,217 @@
     [[CCDirector sharedDirector] popScene];
 }
 -(void) fuelUpgrade:(id)sender {
+    int current = [GlobalDataManager maxFuelWithDict];
+    
+    if (current == FUEL_STAGE_ONE) {
+        fuelMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-2.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_ONE];
+        
+        NSString* c = [NSString stringWithFormat:@"%i",[GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0];
+        
+        [GlobalDataManager setMaxFuelWithDict:FUEL_STAGE_TWO];
+    }
+    else if (current == FUEL_STAGE_TWO) {
+        fuelMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-3.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_TWO];
+        
+        NSString* c = [NSString stringWithFormat:@"%i",[GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0]; //@@@@@@@@@replacing all shared data with "...withdict"$$$$$$$$$$$$$$$$$$$
+        
+        [GlobalDataManager setMaxFuelWithDict:FUEL_STAGE_THREE];
+    }
+    else if (current == FUEL_STAGE_THREE) {
+        fuelMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-4.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_THREE];
+        
+        NSString* c = [NSString stringWithFormat:@"%i",[GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0];
+        
+        [GlobalDataManager setMaxFuelWithDict:FUEL_STAGE_FOUR];
+    }
+    else {
+        return;
+    }
     
 }
 -(void) boostUpgrade:(id)sender {
+    int current = [GlobalDataManager numSecondsBoostWithDict];
     
+    if (current == POWER_UP_STAGE_ONE) {
+        boostMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-2.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_ONE];
+        
+        NSString* c = [NSString stringWithFormat:@"%i",[GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0];
+        
+        [GlobalDataManager setNumSecondsBoostWithDict:POWER_UP_STAGE_TWO];
+    }
+    else if (current == POWER_UP_STAGE_TWO) {
+        boostMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-3.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_TWO];
+        
+        NSString* c = [NSString stringWithFormat:@"%i",[GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0];
+        
+        [GlobalDataManager setNumSecondsBoostWithDict:POWER_UP_STAGE_THREE];
+    }
+    else if (current == POWER_UP_STAGE_THREE) {
+        boostMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-4.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_THREE];
+        
+        NSString* c = [NSString stringWithFormat:@"%i",[GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0];
+        
+        [GlobalDataManager setNumSecondsBoostWithDict:POWER_UP_STAGE_FOUR];
+    }
+    else {
+        return;
+    }
 }
 -(void) doublePointsUpgrade:(id)sender {
+    int current = [GlobalDataManager numSecondsDoublePointsWithDict];
     
+    if (current == POWER_UP_STAGE_ONE) {
+        doublePointsMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-2.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_ONE];
+        
+        NSString* c = [NSString stringWithFormat:@"%i",[GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0];
+        
+        [GlobalDataManager setNumSecondsDoublePointsWithDict:POWER_UP_STAGE_TWO];
+    }
+    else if (current == POWER_UP_STAGE_TWO) {
+        doublePointsMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-3.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_TWO];
+        
+        NSString* c = [NSString stringWithFormat:@"%i", [GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0];
+        
+        [GlobalDataManager setNumSecondsDoublePointsWithDict:POWER_UP_STAGE_THREE];
+    }
+    else if (current == POWER_UP_STAGE_THREE) {
+        doublePointsMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-4.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_THREE];
+        
+        NSString* c = [NSString stringWithFormat:@"%i",[GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0];
+        
+        [GlobalDataManager setNumSecondsDoublePointsWithDict:POWER_UP_STAGE_FOUR];
+    }
+    else {
+        return;
+    }
 }
 -(void) invyUpgrade:(id)sender {
+    int current = [GlobalDataManager numSecondsInvyWithDict];
     
+    if (current == POWER_UP_STAGE_ONE) {
+        invyMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-2.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_ONE];
+        
+        NSString* c = [NSString stringWithFormat:@"%i", [GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0];
+        
+        [GlobalDataManager setNumSecondsInvyWithDict:POWER_UP_STAGE_TWO];
+    }
+    else if (current == POWER_UP_STAGE_TWO) {
+        invyMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-3.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_TWO];
+        
+        NSString* c = [NSString stringWithFormat:@"%i", [GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0];
+        
+        [GlobalDataManager setNumSecondsInvyWithDict:POWER_UP_STAGE_THREE];
+    }
+    else if (current == POWER_UP_STAGE_THREE) {
+        if ([GlobalDataManager totalCoinsWithDict] < POWER_UP_COST_THREE) {
+            //todo: ask user if they'd like to buy more coins
+        }
+        
+        invyMeter.texture = [[CCSprite spriteWithFile:@"Progress-Bar-4.png"] texture];
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - POWER_UP_COST_THREE];
+        
+        NSString* c = [NSString stringWithFormat:@"%i",[GlobalDataManager totalCoinsWithDict]];
+        coins.string = c;
+        
+        [self removeChild:stroke cleanup:YES];
+        stroke = nil;
+        stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+        stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
+        [self addChild:stroke z:0];
+        
+        [GlobalDataManager setNumSecondsInvyWithDict:POWER_UP_STAGE_FOUR];
+    }
+    else {
+        return;
+    }
 }
 
 
@@ -250,7 +488,6 @@
     [rt setPosition:position];
     return rt;
 }
-
 
 
 @end

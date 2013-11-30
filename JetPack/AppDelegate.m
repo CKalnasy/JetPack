@@ -16,6 +16,8 @@
 #import "GameEnded.h"
 #import "MoreCoins.h"
 #import "vunglepub.h"
+#import <GameKit/GameKit.h>
+#import "JetpackIAPHelper.h"
 
 
 @implementation MyNavigationController
@@ -66,6 +68,7 @@
 @end
 
 
+
 @implementation AppController 
 
 @synthesize window=window_, navController=navController_, director=director_;
@@ -97,6 +100,87 @@
     
     RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
     [ad loadAd];
+    
+    
+    
+    /*
+     * Stuff I've added
+     */
+    //data.plist init
+    NSString* dataPath = [[NSBundle mainBundle] bundlePath];
+    NSString* finalDataPath = [dataPath stringByAppendingPathComponent:@"Data.plist"];
+    
+    
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *dataDocPath = [documentsDirectory stringByAppendingPathComponent:@"Data.plist"];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    NSMutableDictionary *dataDict;
+    
+    if ([fileManager fileExistsAtPath: dataDocPath])
+    {
+        dataDict = [NSMutableDictionary dictionaryWithContentsOfFile: dataDocPath];
+    }
+    else
+    {
+        // If the file doesn’t exist, create an empty dictionary
+        dataDict = [[NSMutableDictionary alloc] initWithContentsOfFile:finalDataPath];
+        [fileManager copyItemAtPath:finalDataPath toPath:dataDocPath error:nil];
+    }
+    
+    //data.plist reading/writing
+    int maxFuel = [[dataDict valueForKey:@"max fuel"] intValue];
+    [[GlobalDataManager sharedGlobalDataManager]setFuel:maxFuel];
+    [GlobalDataManager setMaxFuelWithDict:maxFuel];
+    
+    int numSecondsBoost = [[dataDict valueForKey:@"max seconds boost"] intValue];
+    [GlobalDataManager setNumSecondsBoostWithDict:numSecondsBoost];
+    
+    int numSecondsDoublePoints = [[dataDict valueForKey:@"max seconds double points"] intValue];
+    [GlobalDataManager setNumSecondsDoublePointsWithDict:numSecondsDoublePoints];
+    
+    int numSecondsInvy = [[dataDict valueForKey:@"max seconds invy"] intValue];
+    [GlobalDataManager setNumSecondsInvyWithDict:numSecondsInvy];
+    
+    
+    //stats.plist init
+    NSString* statsPath = [[NSBundle mainBundle] bundlePath];
+    NSString* finalStatsPath =[statsPath stringByAppendingPathComponent:@"Stats.plist"];
+    
+    
+    NSString *statsDocPath = [documentsDirectory stringByAppendingPathComponent:@"Stats.plist"];
+    
+    NSMutableDictionary *statsDict;
+    
+    if ([fileManager fileExistsAtPath: statsDocPath])
+    {
+        statsDict = [[NSMutableDictionary alloc] initWithContentsOfFile: statsDocPath];
+    }
+    else
+    {
+        // If the file doesn’t exist, create an empty dictionary
+        statsDict = [[NSMutableDictionary alloc] initWithContentsOfFile:finalStatsPath];
+        [fileManager copyItemAtPath:finalStatsPath toPath:statsDocPath error:nil];
+    }
+    
+    
+    //stats.plist reading
+    int highScore = [[statsDict valueForKey:@"high score"] intValue];
+    [GlobalDataManager setHighScoreWithDict: highScore];
+    
+    int totalGames = [[statsDict valueForKey:@"total games"] intValue];
+    [GlobalDataManager setTotalGamesWithDict:totalGames];
+    
+    int coins = [[statsDict valueForKey:@"coins collected"] intValue];
+    [GlobalDataManager setTotalCoinsWithDict:coins];
+    
+    
+    [JetpackIAPHelper sharedInstance];
+    
+    
+    
     
 	// Create the main window
 	window_ = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -175,38 +259,6 @@
 	[window_ makeKeyAndVisible];
     
     
-    /*
-     * Stuff I've added
-     */
-    //data.plist init
-    NSString* path = [[NSBundle mainBundle] bundlePath];
-    NSString* finalPath = [path stringByAppendingPathComponent:@"Data.plist"];
-    NSDictionary* dataDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
-    
-    //data.plist reading
-    int totalCoins = [[dataDict valueForKey:@"coins"] intValue];
-    [[GlobalDataManager sharedGlobalDataManager] setTotalCoins:totalCoins];
-        
-    int maxFuel = [[dataDict valueForKey:@"max fuel"] intValue];
-    [[GlobalDataManager sharedGlobalDataManager]setFuel:maxFuel];
-    [[GlobalDataManager sharedGlobalDataManager]setMaxFuel:maxFuel];
-    
-    //stats.plist init
-    path = [[NSBundle mainBundle] bundlePath];
-    finalPath =[path stringByAppendingPathComponent:@"Stats.plist"];
-    NSDictionary* statsDict =[NSDictionary dictionaryWithContentsOfFile:finalPath];
-    
-    //stats.plist reading
-    int highScore = [[statsDict valueForKey:@"high score"] intValue];
-    [[GlobalDataManager sharedGlobalDataManager] setHighScore: highScore];
-    
-    int totalGames = [[statsDict valueForKey:@"total games"] intValue];
-    [[GlobalDataManager sharedGlobalDataManager] setTotalGames:totalGames];
-    
-    int coins = [[statsDict valueForKey:@"coins collected"] intValue];
-    [[GlobalDataManager sharedGlobalDataManager] setTotalCoins:coins];
-    
-
     [glView setMultipleTouchEnabled:YES];
 	
 	return YES;
@@ -236,13 +288,14 @@
 
 -(void) applicationDidEnterBackground:(UIApplication*)application
 {
-	if( [navController_ visibleViewController] == director_ )
+	//if( [navController_ visibleViewController] == director_ )
 		[director_ stopAnimation];
 }
 
 -(void) applicationWillEnterForeground:(UIApplication*)application
 {
-	if( [navController_ visibleViewController] == director_ )
+	//if( [navController_ visibleViewController] == director_ )   commented out beacuse if the game center view is active, game will crash as this if statement will return false
+    
 		[director_ startAnimation];
 }
 
@@ -272,6 +325,7 @@
 	
 	[super dealloc];*/
 }
+
 
 
 

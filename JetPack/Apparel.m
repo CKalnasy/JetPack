@@ -31,9 +31,18 @@
         background.position = CGPointMake(background.contentSize.width/2, 0);
         [self addChild:background z:-100];
         
-        CCSprite* apparelHeader = [CCSprite spriteWithFile:@"apparel-header.png"];
-        apparelHeader.position = CGPointMake(apparelHeader.contentSize.width/2, winSizeActual.height - apparelHeader.contentSize.height/2);
-        [self addChild:apparelHeader z:9];
+//        CCSprite* apparelHeader = [CCSprite spriteWithFile:@"apparel-header.png"];
+//        apparelHeader.position = CGPointMake(apparelHeader.contentSize.width/2, winSizeActual.height - apparelHeader.contentSize.height/2);
+//        [self addChild:apparelHeader z:9];
+        
+        CCSprite* apparelHeaderTop = [CCSprite spriteWithFile:@"apparel-top.png"];
+        apparelHeaderTop.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - apparelHeaderTop.contentSize.height/2);
+        [self addChild:apparelHeaderTop z:9];
+        
+        CCSprite* apparelHeaderBottom = [CCSprite spriteWithFile:@"apparel-bottom.png"];
+        apparelHeaderBottom.anchorPoint = CGPointMake(0.5, 1);
+        apparelHeaderBottom.position = CGPointMake(winSizeActual.width/2, apparelHeaderTop.position.y - apparelHeaderTop.contentSize.height/2);
+        [self addChild:apparelHeaderBottom z:4];
         
         CCMenuItem* back = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(back:)];
         CCMenu* backMenu = [CCMenu menuWithItems:back, nil];
@@ -44,7 +53,7 @@
         //number of coins
         CCSprite* coinIcon = [CCSprite spriteWithFile:@"store-coin.png"];
         coinIcon.position = CGPointMake(winSizeActual.width - backMenu.position.x + back.contentSize.width/2 - coinIcon.contentSize.width/2, backMenu.position.y);
-        [self addChild:coinIcon];
+        [self addChild:coinIcon z:10];
         
         NSNumber* numCoins = [NSNumber numberWithInt: [[GlobalDataManager sharedGlobalDataManager] totalCoins]];
         coins = [CCLabelTTF labelWithString:[numCoins stringValue] fontName:@"Orbitron-Light" fontSize:18];
