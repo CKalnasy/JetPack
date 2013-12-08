@@ -36,7 +36,7 @@
         [self addChild:upgradesHeader z:-10];
         
         //back button
-        CCMenuItem* back = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(back:)];
+        CCMenuItem* back = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"Push-back.png" target:self selector:@selector(back:)];
         CCMenu* backMenu = [CCMenu menuWithItems:back, nil];
         backMenu.position = CGPointMake(back.contentSize.width/6 + back.contentSize.width/2, (winSizeActual.height - HEADER_SIZE) - back.contentSize.width/6 - back.contentSize.height/2);
         [self addChild:backMenu];
@@ -64,7 +64,7 @@
         fuelIcon.position = CGPointMake(fuelIcon.contentSize.width/3 + fuelIcon.contentSize.width/2, 4*pos);
         [self addChild:fuelIcon];
         
-        CCMenuItem* fuelUpgrade = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" disabledImage:@"back-button.png" target:self selector:@selector(fuelUpgrade:)];
+        CCMenuItem* fuelUpgrade = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"Push-Back.png" disabledImage:@"back-button.png" target:self selector:@selector(fuelUpgrade:)];
         CCMenu* fuelMenu = [CCMenu menuWithItems:fuelUpgrade, nil];
         fuelMenu.position = CGPointMake(winSizeActual.width - fuelIcon.position.x, fuelIcon.position.y);
         [self addChild:fuelMenu];
@@ -107,7 +107,7 @@
         boostIcon.position = CGPointMake(fuelIcon.position.x, 3*pos);
         [self addChild:boostIcon];
         
-        CCMenuItem* boostUpgrade = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" disabledImage:@"back-button.png" target:self selector:@selector(boostUpgrade:)];
+        CCMenuItem* boostUpgrade = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"Push-Back.png" disabledImage:@"back-button.png" target:self selector:@selector(boostUpgrade:)];
         CCMenu* boostMenu = [CCMenu menuWithItems:boostUpgrade, nil];
         boostMenu.position = CGPointMake(winSizeActual.width - boostIcon.position.x, boostIcon.position.y);
         [self addChild:boostMenu];
@@ -150,7 +150,7 @@
         doublePointsIcon.position = CGPointMake(fuelIcon.position.x, 2*pos);
         [self addChild:doublePointsIcon];
         
-        CCMenuItem* doublePointsUpgrade = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" disabledImage:@"back-button.png" target:self selector:@selector(doublePointsUpgrade:)];
+        CCMenuItem* doublePointsUpgrade = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"Push-back.png" disabledImage:@"back-button.png" target:self selector:@selector(doublePointsUpgrade:)];
         CCMenu* doublePointsMenu = [CCMenu menuWithItems:doublePointsUpgrade, nil];
         doublePointsMenu.position = CGPointMake(winSizeActual.width - doublePointsIcon.position.x, doublePointsIcon.position.y);
         [self addChild:doublePointsMenu];
@@ -193,7 +193,7 @@
         invyIcon.position = CGPointMake(fuelIcon.position.x, pos);
         [self addChild:invyIcon];
         
-        CCMenuItem* invyUpgrade = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" disabledImage:@"back-button.png" target:self selector:@selector(invyUpgrade:)];
+        CCMenuItem* invyUpgrade = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"Push-Back.png" disabledImage:@"back-button.png" target:self selector:@selector(invyUpgrade:)];
         CCMenu* invyMenu = [CCMenu menuWithItems:invyUpgrade, nil];
         invyMenu.position = CGPointMake(winSizeActual.width - invyIcon.position.x, invyIcon.position.y);
         [self addChild:invyMenu];
@@ -270,7 +270,7 @@
         stroke = nil;
         stroke = [self createStroke:coins size:0.5 color:ccBLACK];
         stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
-        [self addChild:stroke z:0]; //@@@@@@@@@replacing all shared data with "...withdict"$$$$$$$$$$$$$$$$$$$
+        [self addChild:stroke z:0];
         
         [GlobalDataManager setMaxFuelWithDict:FUEL_STAGE_THREE];
     }

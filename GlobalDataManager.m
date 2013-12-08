@@ -10,7 +10,7 @@
 
 
  @implementation GlobalDataManager
-@synthesize scoreRaw, scoreActual, fuel, numCoins, totalCoins, totalGames, highScore, cb, player, isPaused, maxFuel, playerColor, numSecondsBoost, numSecondsDoublePoints, numSecondsInvy;
+@synthesize scoreRaw, scoreActual, fuel, numCoins, totalCoins, totalGames, highScore, cb, player, isPaused, maxFuel, playerColor, numSecondsBoost, numSecondsDoublePoints, numSecondsInvy, isSoundOn;
 
 static GlobalDataManager *sharedGlobalDataManager = nil;
 
@@ -218,11 +218,28 @@ static GlobalDataManager *sharedGlobalDataManager = nil;
     [dataDict writeToFile:plistPath atomically:YES];
     
     [GlobalDataManager sharedGlobalDataManager].numSecondsInvy = num;
-    
-    NSLog(@"%@",dataDict);
 }
 
 
++(void) setIsSoundOnWithDict:(BOOL)on {
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
+    
+    [dataDict setObject:[NSNumber numberWithInteger:on] forKey:@"is sound on"];
+    [dataDict writeToFile:plistPath atomically:YES];
+    
+    [GlobalDataManager sharedGlobalDataManager].isSoundOn = on;
+}
++(BOOL) isSonudOnWithDict {
+    NSString *rootPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *plistPath = [rootPath stringByAppendingPathComponent:@"Data.plist"];
+    NSMutableDictionary* dataDict =[NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
+    
+    [GlobalDataManager sharedGlobalDataManager].isSoundOn = [[dataDict valueForKey:@"is sound on"]boolValue];
+    
+    return [GlobalDataManager sharedGlobalDataManager].isSoundOn;
+}
 
 
 

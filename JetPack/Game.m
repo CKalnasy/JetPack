@@ -42,7 +42,7 @@
         winSize = CGSizeMake(320, 480);    //screen size of 3.5" display
         winSizeActual = [[CCDirector sharedDirector] winSize];
         
-        numObsPerScreen = 3.3;
+        numObsPerScreen = 3.15;
         
         lastObsDeleted = 100;
         numObsAdded = 100;
@@ -192,14 +192,14 @@
         didChangeLeftToRight = (previousAcc < 0 && acceleration.x > 0);
     }
     if (didChangeLeftToRight) {
-        if (player.position.x >= posBeforeFlip + 6) {
+        if (player.position.x >= posBeforeFlip + POS_TO_FLIP) {
             [player faceRight];
             //[angledFeetPlayer faceRight];
             posBeforeFlip = winSizeActual.width * 2;
         }
     }
     else {
-        if (player.position.x <= posBeforeFlip - 6) {
+        if (player.position.x <= posBeforeFlip - POS_TO_FLIP) {
             [player faceLeft];
             //[angledFeetPlayer faceLeft];
             posBeforeFlip = winSizeActual.width * 2;
@@ -436,10 +436,10 @@
     float leftBorderLimit = halfWidthImage;
     float rightBorderLimit = winSizeActual.width;
     
-    if(pos.x < leftBorderLimit){
+    if(pos.x < leftBorderLimit && !isTouchingHorizObs){
         pos.x = rightBorderLimit;
     }
-    else if(pos.x > rightBorderLimit){
+    else if(pos.x > rightBorderLimit && !isTouchingHorizObs){
         pos.x = leftBorderLimit;
     }
     
@@ -1285,6 +1285,8 @@
         //call a boost method to shoot up the player
         [self schedule:@selector(boostUp:)];
         
+        player.fuel = player.maxFuel;
+        
         //stop detecting colisions
         doDetectCollisions = NO;
         
@@ -1724,6 +1726,7 @@
     player.velocity = CGPointMake(player.velocity.x, -player.velocity.y/2);
     [self schedule:@selector(gravityUpdate:)];
     [self unschedulePowerUpLookers];
+    [self unschedulePowerUpEnablers];
     
     //make ending animation of player falling to the bottom
     [self schedule:@selector(playerFellToBottom:)];
@@ -1739,6 +1742,8 @@
         [self unschedule:@selector(gravityUpdate:)];
         [self unschedule:@selector(playerFellToBottom:)];
         [self unschedule:@selector(idlingjetpack:)];
+        [self unschedulePowerUpLookers];
+        [self unschedulePowerUpEnablers];
 
         if (numContinuesUsed < 1 && [[GlobalDataManager sharedGlobalDataManager]totalCoins] >= COINS_TO_CONTINUE) {
             [self continueGame];
@@ -1768,11 +1773,34 @@
 }
 -(void) continueGame {
     //todo: ask if they would like to continue
-    CCMenuItem* continueYes = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(doContinue:)];
-    CCMenuItem* continueNo = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(doNotContinue:)];
+    continueText1 = [CCLabelTTF labelWithString:@"CONTINUE PLAYING?" fontName:@"Orbitron-Medium" fontSize:21];
+    continueText2 = [CCLabelTTF labelWithString:@"500   " fontName:@"Orbitron-Medium" fontSize:21];
+    continueCoin = [CCSprite spriteWithFile:@"store-coin.png"];
+    
+    continueText1.position = CGPointMake(winSizeActual.width/2, winSizeActual.height/2 + continueText2.contentSize.height * 1.5);
+    [self addChild:continueText1 z:1];
+    
+    continueText2.position = CGPointMake(winSizeActual.width/2, winSizeActual.height/2);
+    [self addChild:continueText2 z:1];
+    
+    continueCoin.position = CGPointMake(continueText2.position.x + continueText2.contentSize.width/2, continueText2.position.y);
+    [self addChild:continueCoin z:1];
+    
+    continueText1Stroke = [self createStroke:continueText1 size:0.5 color:ccBLACK];
+    continueText1Stroke.position = continueText1.position;
+    [self addChild:continueText1Stroke];
+    
+    continueText2Stroke = [self createStroke:continueText2 size:0.5 color:ccBLACK];
+    continueText2Stroke.position = continueText2.position;
+    [self addChild:continueText2Stroke];
+    
+    
+    CCMenuItem* continueYes = [CCMenuItemImage itemWithNormalImage:@"Yes-button.png" selectedImage:@"Push-Yes.png" target:self selector:@selector(doContinue:)];
+    CCMenuItem* continueNo = [CCMenuItemImage itemWithNormalImage:@"No-button.png" selectedImage:@"Push-No.png" target:self selector:@selector(doNotContinue:)];
     
     continueMenu = [CCMenu menuWithItems:continueNo, continueYes, nil];
     [continueMenu alignItemsHorizontallyWithPadding:continueYes.contentSize.width];
+    continueMenu.position = CGPointMake(winSizeActual.width/2, continueText2.position.y - continueText2.contentSize.height * 1.5);
     [self addChild:continueMenu];
     
     self.touchEnabled = NO;
@@ -1815,17 +1843,6 @@
     }
 }
 -(void) beginAfterContinue {
-    //put the player on an appropriate obstacle or on the bottom of the screen
-    //    int pos = [self obsToBeginOn];
-    //
-    //    if (pos == -1) {
-    //        player.position = CGPointMake(winSizeActual.width/2, player.contentSize.height/2 + 2.5);
-    //    }
-    //    else {
-    //        Obstacles* start = (Obstacles*)[self getChildByTag:pos];
-    //        player.position = CGPointMake(start.position.x, start.position.y + start.contentSize.height/2 + player.contentSize.height/2 + 2.5);
-    //    }
-    
     player.position = CGPointMake(winSizeActual.width/2, player.contentSize.height/2 + 2.5);
     
     //lower total coins
@@ -1846,6 +1863,8 @@
 -(void) doContinue:(id)sender {
     numContinuesUsed++;
     
+    [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] - COINS_TO_CONTINUE];
+    
     //top off the fuel tank
     player.fuel = player.maxFuel;
     didRunOutOfFuel = NO;
@@ -1853,6 +1872,11 @@
     [self schedule:@selector(cont:)];
     
     [self removeChild:continueMenu cleanup:NO];
+    [self removeChild:continueText1];
+    [self removeChild:continueText1Stroke];
+    [self removeChild:continueText2];
+    [self removeChild:continueText2Stroke];
+    [self removeChild:continueCoin];
 }
 -(void) doNotContinue:(id)sender {
     [self gameEnded];
@@ -2035,8 +2059,8 @@
 }
 
 -(void) addFuelBar{
-    CCSprite* outer = [CCSprite spriteWithFile:@"fuel-boarder.png"];
-    innerFuelBar = [CCSprite spriteWithFile:@"fuel-inner-bar.png"];
+    CCSprite* outer = [CCSprite spriteWithFile:@"fuel-boarder1.png"];
+    innerFuelBar = [CCSprite spriteWithFile:@"fuel-inner-bar1.png"];
     
     outer.position = CGPointMake(10 + outer.contentSize.width/2, winSizeActual.height - winSize.height/20);
     innerFuelBar.position = CGPointMake(outer.position.x, winSizeActual.height - winSize.height/20);
@@ -2055,7 +2079,7 @@
         [self removeChild:innerFuelBar];
         innerFuelBar = nil;
         
-        innerFuelBar = [CCSprite spriteWithFile:@"fuel-inner-bar.png" rect:CGRectMake(innerFuelBarRect.size.width/2 + 12, innerFuelBarRect.origin.y, 0, innerFuelBarRect.size.height)];
+        innerFuelBar = [CCSprite spriteWithFile:@"fuel-inner-bar1.png" rect:CGRectMake(innerFuelBarRect.size.width/2 + 12, innerFuelBarRect.origin.y, 0, innerFuelBarRect.size.height)];
         innerFuelBar.position = CGPointMake(innerFuelBarRect.origin.x, innerFuelBarRect.origin.y);
         [self addChild:innerFuelBar];
 
@@ -2067,7 +2091,7 @@
     [self removeChild:innerFuelBar];
     innerFuelBar = nil;
     
-    innerFuelBar = [CCSprite spriteWithFile:@"fuel-inner-bar.png" rect:innerFuelBarRect];
+    innerFuelBar = [CCSprite spriteWithFile:@"fuel-inner-bar1.png" rect:innerFuelBarRect];
     innerFuelBar.position = CGPointMake(innerFuelBarRect.origin.x, innerFuelBarRect.origin.y);
     [self addChild:innerFuelBar];
 }
@@ -2165,6 +2189,41 @@
 
 
 
+-(CCRenderTexture*) createStroke: (CCLabelTTF*) label   size:(float)size   color:(ccColor3B)cor
+{
+    CCRenderTexture* rt = [CCRenderTexture renderTextureWithWidth:label.texture.contentSize.width+size*2  height:label.texture.contentSize.height+size*2];
+    CGPoint originalPos = [label position];
+    ccColor3B originalColor = [label color];
+    BOOL originalVisibility = [label visible];
+    [label setColor:cor];
+    [label setVisible:YES];
+    ccBlendFunc originalBlend = [label blendFunc];
+    [label setBlendFunc:(ccBlendFunc) { GL_SRC_ALPHA, GL_ONE }];
+    CGPoint bottomLeft = ccp(label.texture.contentSize.width * label.anchorPoint.x + size, label.texture.contentSize.height * label.anchorPoint.y + size);
+    //CGPoint positionOffset = ccp(label.texture.contentSize.width * label.anchorPoint.x - label.texture.contentSize.width/2,label.texture.contentSize.height * label.anchorPoint.y - label.texture.contentSize.height/2);
+    //use this for adding stoke to its self...
+    CGPoint positionOffset= ccp(-label.contentSize.width/2,-label.contentSize.height/2);
+    
+    CGPoint position = ccpSub(originalPos, positionOffset);
+    
+    [rt begin];
+    for (int i=0; i<360; i+=60) // you should optimize that for your needs
+    {
+        [label setPosition:ccp(bottomLeft.x + sin(CC_DEGREES_TO_RADIANS(i))*size, bottomLeft.y + cos(CC_DEGREES_TO_RADIANS(i))*size)];
+        [label visit];
+    }
+    [rt end];
+    [[[rt sprite] texture] setAntiAliasTexParameters];//THIS
+    [label setPosition:originalPos];
+    [label setColor:originalColor];
+    [label setBlendFunc:originalBlend];
+    [label setVisible:originalVisibility];
+    [rt setPosition:position];
+    return rt;
+}
+
+
+
 - (void) dealloc
 {
     //[opacityLayer release];
@@ -2182,7 +2241,7 @@
  
  main menu
  other jetpacks
- fuel fine tuning
+
  in-app purchases (need bank acc. for)
  game ended scene (wait until artwork)
  settings (wait until artwork)

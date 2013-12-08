@@ -55,66 +55,51 @@
         [self addChild:player z:1];
         
         
-        classic = [CCMenuItemImage itemWithNormalImage:@"Classic.png" selectedImage:@"Push-Classic.png" target:self selector:@selector(classic:)];
+        classic = [CCMenuItemImage itemWithNormalImage:@"Classic-button.png" selectedImage:@"Push-Classic.png" target:self selector:@selector(classic:)];
         
-        leaderboards = [CCMenuItemImage itemWithNormalImage:@"Leaderboards.png" selectedImage:@"Push-Leaderboards.png" target:self selector:@selector(leaderboards:)];
+        leaderboards = [CCMenuItemImage itemWithNormalImage:@"Leaderboards-button.png" selectedImage:@"Push-Leaderboards.png" target:self selector:@selector(leaderboards:)];
         
-        store = [CCMenuItemImage itemWithNormalImage:@"Store.png" selectedImage:@"Push-Store.png" target:self selector:@selector(store:)];
+        store = [CCMenuItemImage itemWithNormalImage:@"Store-button.png" selectedImage:@"Push-Store.png" target:self selector:@selector(store:)];
         
-        stats = [CCMenuItemImage itemWithNormalImage:@"Stats.png" selectedImage:@"Push-Stats.png" target:self selector:@selector(stats:)];
+        stats = [CCMenuItemImage itemWithNormalImage:@"Stats-button.png" selectedImage:@"Push-Stats.png" target:self selector:@selector(stats:)];
         
-        timeTrial = [CCMenuItemImage itemWithNormalImage:@"Time-trial.png" selectedImage:@"Push-Time-trial.png" target:self selector:@selector(timeTrial:)];
+        timeTrial = [CCMenuItemImage itemWithNormalImage:@"Time-trial-button.png" selectedImage:@"Push-Time-trial.png" target:self selector:@selector(timeTrial:)];
         
-        settings = [CCMenuItemImage itemWithNormalImage:@"Settings.png" selectedImage:@"Push-Settings.png" target:self selector:@selector(settings:)];
-        
-        
-//        CCMenu *menu = [CCMenu menuWithItems:classic, timeTrial, leaderboards, store, stats, settings, nil];
-//        [menu alignItemsVerticallyWithPadding:classic.contentSize.height/2];
-//        menu.position = CGPointMake(winSizeActual.width/2, header.position.y - header.contentSize.height/2 - 3*(classic.contentSize.height/2 + classic.contentSize.height) - classic.contentSize.height/2);
-//        [self addChild:menu];
-        
-        float padding;
-        if (winSizeActual.height == 480) {
-            padding = classic.contentSize.height*4/3;
-        }
-        else {
-            padding = classic.contentSize.height*5/3;
-        }
-        
-        CCMenu* menuLeft = [CCMenu menuWithItems:classic, store, leaderboards, nil];
-        
-        [menuLeft alignItemsVerticallyWithPadding:padding];
-        menuLeft.position = CGPointMake(winSizeActual.width/4, header.position.y - header.contentSize.height/2 - 3*(classic.contentSize.height/2 + classic.contentSize.height) - classic.contentSize.height*(1.0/6.0));
-        
-        [self addChild:menuLeft];
+        settings = [CCMenuItemImage itemWithNormalImage:@"Settings-button.png" selectedImage:@"Push-Settings.png" target:self selector:@selector(settings:)];
         
         
-        CCMenu* menuRight = [CCMenu menuWithItems:timeTrial, stats, settings, nil];
-        
-        [menuRight alignItemsVerticallyWithPadding:padding];
-        menuRight.position = CGPointMake(winSizeActual.width*3/4, header.position.y - header.contentSize.height/2 - 3*(classic.contentSize.height/2 + classic.contentSize.height) - classic.contentSize.height*(1.0/6.0));
-        [self addChild:menuRight];
+        //menu init
+        float pos = (header.position.y - header.contentSize.height/2 - player.contentSize.height) / 7.0;
         
         
+        menuClassic = [CCMenu menuWithItems:classic, nil];
+        menuClassic.position = CGPointMake(winSizeActual.width/2, pos * 6 + player.contentSize.height);
+        [self addChild:menuClassic];
         
-//        CCMenu* menuStore = [CCMenu menuWithItems:store, nil];
-//        menuStore.position = CGPointMake(winSize.width/3, winSize.width/3);
-//        [self addChild:menuStore];
-//        
-//        
-//        CCMenu* menuStats = [CCMenu menuWithItems:stats, nil];
-//        menuStats.position = CGPointMake(winSize.width/3, winSize.width/3);
-//        [self addChild:menuStats];
-//        
-//        
-//        CCMenu* menuTimeTrial = [CCMenu menuWithItems:timeTrial, nil];
-//        menuTimeTrial.position = CGPointMake(winSize.width/3, winSize.width/3);
-//        [self addChild:menuTimeTrial];
-//        
-//        
-//        CCMenu* menuSettings = [CCMenu menuWithItems:settings, nil];
-//        menuSettings.position = CGPointMake(winSize.width/3, winSize.width/3);
-//        [self addChild:menuSettings];
+        
+        menuTimeTrial = [CCMenu menuWithItems:timeTrial, nil];
+        menuTimeTrial.position = CGPointMake(winSizeActual.width/2, pos * 5 + player.contentSize.height);
+        [self addChild:menuTimeTrial];
+        
+        
+        menuStore = [CCMenu menuWithItems:store, nil];
+        menuStore.position = CGPointMake(winSizeActual.width/2, pos * 4 + player.contentSize.height);
+        [self addChild:menuStore];
+        
+        
+        menuLeaderboards = [CCMenu menuWithItems:leaderboards, nil];
+        menuLeaderboards.position = CGPointMake(winSizeActual.width/2, pos * 3 + player.contentSize.height);
+        [self addChild:menuLeaderboards];
+        
+        
+        menuStats = [CCMenu menuWithItems:stats, nil];
+        menuStats.position = CGPointMake(winSizeActual.width/2, pos * 2 + player.contentSize.height);
+        [self addChild:menuStats];
+        
+        
+        menuSettings = [CCMenu menuWithItems:settings, nil];
+        menuSettings.position = CGPointMake(winSizeActual.width/2, pos * 1 + player.contentSize.height);
+        [self addChild:menuSettings];
         
         
         [self schedule:@selector(updateExclamation:)];
@@ -122,15 +107,6 @@
 	return self;
 }
 
-
-
--(void) onEnter {
-    [super onEnter];
-    
-    
-    [[GameKitHelper sharedGameKitHelper]
-     authenticateLocalPlayer];
-}
 
 
 
@@ -142,7 +118,6 @@
 }
 -(void) store:(id)sender{
     [[CCDirector sharedDirector] pushScene:[Store scene]];
-    //[[CCDirector sharedDirector] replaceScene:[Store scene]];
 }
 -(void) stats:(id)sender{
     [[CCDirector sharedDirector] pushScene:[Stats scene]];
@@ -162,7 +137,7 @@
     
     if ([VGVunglePub adIsAvailable]) {
         exclamationPoint = [CCSprite spriteWithFile:@"!.png"];
-        exclamationPoint.position = CGPointMake(store.position.x + store.contentSize.width/2, store.position.y + store.contentSize.height/2);
+        exclamationPoint.position = CGPointMake(menuStore.position.x + store.contentSize.width/2, menuStore.position.y + store.contentSize.height/2);
         [self addChild:exclamationPoint];
     }
     

@@ -31,6 +31,8 @@
     int numSecondsDoublePoints;
     int numSecondsInvy;
     
+    BOOL isSoundOn;
+    
     Chartboost* cb;
 }
 
@@ -49,6 +51,7 @@
 @property (nonatomic, readwrite) int numSecondsBoost;
 @property (nonatomic, readwrite) int numSecondsDoublePoints;
 @property (nonatomic, readwrite) int numSecondsInvy;
+@property (nonatomic, readwrite) BOOL isSoundOn;
 
 
 
@@ -98,6 +101,9 @@
 
 +(int) numSecondsInvyWithDict;
 +(void) setNumSecondsInvyWithDict:(int)num;
+
++(void) setIsSoundOnWithDict:(BOOL)on;
++(BOOL) isSonudOnWithDict;
 
 
 @end

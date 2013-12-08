@@ -180,6 +180,8 @@
     [JetpackIAPHelper sharedInstance];
     
     
+    //[[GameKitHelper sharedGameKitHelper] authenticateLocalPlayer];
+    
     
     
 	// Create the main window
@@ -281,6 +283,8 @@
 // call got rejected
 -(void) applicationDidBecomeActive:(UIApplication *)application
 {
+    [[GameKitHelper sharedGameKitHelper] authenticateLocalPlayer];
+    
 	[[CCDirector sharedDirector] setNextDeltaTimeZero:YES];
 	if( [navController_ visibleViewController] == director_ )
 		[director_ resume];

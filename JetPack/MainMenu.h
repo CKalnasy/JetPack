@@ -24,6 +24,13 @@
     CCMenuItemImage *stats;
     CCMenuItemImage *timeTrial;
     CCMenuItemImage *settings;
+    
+    CCMenu* menuClassic;
+    CCMenu* menuTimeTrial;
+    CCMenu* menuStore;
+    CCMenu* menuLeaderboards;
+    CCMenu* menuStats;
+    CCMenu* menuSettings;
 }
 
 +(CCScene *) scene;

@@ -21,7 +21,6 @@
     int scoreRaw;
     int scoreActual;
     int numCoins;
-    int fuel;
     
     Player* player;
     CCSprite* bg1;
@@ -42,6 +41,9 @@
     
     CCSprite* bgTransition;
     BOOL didTransition;
+    
+    BOOL shakeLeft;
+    BOOL hasShook;
 }
 
 @property (nonatomic, readwrite) CCLabelTTF* scoreLabel;

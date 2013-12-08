@@ -9,6 +9,7 @@
 #import "Background.h"
 #import "GlobalDataManager.h"
 #import "Game.h"
+#import <AudioToolbox/AudioToolbox.h>
 
 
 @implementation Background
@@ -71,7 +72,7 @@
         [self addChild:stroke z:0];
         
         //shows the coins
-        coinsLabel = [CCLabelTTF labelWithString:@"0" fontName:@"Orbitron-Light" fontSize:18];
+        coinsLabel = [CCLabelTTF labelWithString:@"000" fontName:@"Orbitron-Light" fontSize:16];
         coinsLabel.anchorPoint = CGPointMake(1, 0.5);
 		coinsLabel.position = CGPointMake(winSizeActual.width*5/6, scoreLabel.position.y);
         [self addChild:coinsLabel z:1];
@@ -83,15 +84,6 @@
         CCSprite* coinIcon = [CCSprite spriteWithFile:@"store-coin.png"];
         coinIcon.position = CGPointMake(coinsLabel.position.x + coinIcon.contentSize.width * 3/4, coinsLabel.position.y + 1.5);
         [self addChild:coinIcon];
-        
-        
-        //shows the fuel left
-        NSString* fuelText = [NSString stringWithFormat:@"%i", [[GlobalDataManager sharedGlobalDataManager]maxFuel]];
-        fuelLabel = [CCLabelTTF labelWithString:fuelText fontName:@"arial" fontSize:24];
-        fuelLabel.position = CGPointMake(winSizeActual.width - winSizeActual.width/32, winSizeActual.height - 50);
-        fuelLabel.anchorPoint = CGPointMake(1, 1);
-        [self addChild:fuelLabel];
-        
         
         
         [self schedule:@selector(update:)];
@@ -127,19 +119,21 @@
     //coins
     if (numCoins != [GlobalDataManager numCoins]) {
         numCoins = [GlobalDataManager numCoins];
-        [coinsLabel setString: [NSString  stringWithFormat:@"%i",numCoins]];
+        
+        NSString* coins = [NSString stringWithFormat:@"%i",numCoins];
+        int zeros = 3 - coins.length;
+        for (int i = 0; i < zeros; i++) {
+            coins = [@"0" stringByAppendingString:coins];
+        }
+        
+        
+        [coinsLabel setString: coins];
         
         [self removeChild:coinStroke cleanup:YES];
         coinStroke = nil;
         coinStroke = [self createStroke:coinsLabel size:0.5 color:ccBLACK];
         coinStroke.position = CGPointMake(coinsLabel.position.x - coinsLabel.contentSize.width/2, coinsLabel.position.y);
         [self addChild:coinStroke z:0];
-    }
-    
-    //fuel
-    if (fuel != [GlobalDataManager fuel]) {
-        fuel = [GlobalDataManager fuel];
-        [fuelLabel setString: [NSString  stringWithFormat:@"%i",fuel]];
     }
 }
 
@@ -183,6 +177,7 @@
         bg2.position = CGPointMake(bg2.contentSize.width/2, bgTransition.position.y + bgTransition.contentSize.height);
             
         didTransition = YES;
+        [self schedule:@selector(shake:) interval:1.0/30];
     }
     
     //space!!!
@@ -242,12 +237,43 @@
 
 
 -(void) shake:(ccTime)delta{
-    if (bgTransition.position.x < 0) {
-        bgTransition.position = CGPointMake(bgTransition.position.x + 20, bgTransition.position.y);
+    //shakes from pixel 600 to 900 on bgtransition
+    player = [[GlobalDataManager sharedGlobalDataManager] player];
+    if (!(player.position.y + player.contentSize.height/2 + (-bgTransition.position.y) >= 300) && !hasShook) {
+        return;
+    }
+    hasShook = YES;
+    if ((player.position.y + player.contentSize.height/2 + (-bgTransition.position.y) >= 450)) {
+        bgTransition.position = CGPointMake(winSizeActual.width/2, bgTransition.position.y);
+        bg1.position = CGPointMake(winSizeActual.width/2, bg1.position.y);
+        bg2.position = CGPointMake(winSizeActual.width/2, bg2.position.y);
+        
+        [self unschedule:@selector(shake:)];
+    }
+    if (bgTransition.position.x == bgTransition.contentSize.width/2) {
+        if (shakeLeft) {
+            bgTransition.position = CGPointMake(bgTransition.position.x - 2, bgTransition.position.y);
+            bg1.position = CGPointMake(bg1.position.x - 2, bg1.position.y);
+            bg2.position = CGPointMake(bg2.position.x - 2, bg2.position.y);
+        }
+        else {
+            bgTransition.position = CGPointMake(bgTransition.position.x + 2, bgTransition.position.y);
+            bg1.position = CGPointMake(bg1.position.x + 2, bg1.position.y);
+            bg2.position = CGPointMake(bg2.position.x + 2, bg2.position.y);
+        }
+        shakeLeft = !shakeLeft;
+    }
+    else if (bgTransition.position.x > bgTransition.contentSize.width/2) {
+        bgTransition.position = CGPointMake(bgTransition.position.x - 2, bgTransition.position.y);
+        bg1.position = CGPointMake(bg1.position.x - 2, bg1.position.y);
+        bg2.position = CGPointMake(bg2.position.x - 2, bg2.position.y);
     }
     else {
-        bgTransition.position = CGPointMake(bgTransition.position.x - 20, bgTransition.position.y);
+        bgTransition.position = CGPointMake(bgTransition.position.x + 2, bgTransition.position.y);
+        bg1.position = CGPointMake(bg1.position.x + 2, bg1.position.y);
+        bg2.position = CGPointMake(bg2.position.x + 2, bg2.position.y);
     }
+    
 }
 
 
@@ -270,6 +296,8 @@
             backgroundScrollSpeed.y = MIN_SCROLLING_SPEED_SPACE;
         }
     }
+    
+    
 }
 
 

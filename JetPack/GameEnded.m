@@ -88,17 +88,17 @@
         
         
         //bottom buttons
-        CCMenuItem* playAgain = [CCMenuItemImage itemWithNormalImage:@"Classic.png" selectedImage:@"Classic.png" target:self selector:@selector(playAgain:)];
+        CCMenuItem* playAgain = [CCMenuItemImage itemWithNormalImage:@"Play-again-button.png" selectedImage:@"Push-Play-again.png" target:self selector:@selector(playAgain:)];
         CCMenu* playAgainMenu = [CCMenu menuWithItems:playAgain, nil];
         playAgainMenu.position = CGPointMake(winSizeActual.width/2, (gameOverHeader.position.y - gameOverHeader.contentSize.height/2) * (2.0/7));
         [self addChild:playAgainMenu];
         
-        CCMenuItem* mainMenu = [CCMenuItemImage itemWithNormalImage:@"Stats.png" selectedImage:@"Push-Stats.png" target:self selector:@selector(mainMenu:)];
+        CCMenuItem* mainMenu = [CCMenuItemImage itemWithNormalImage:@"Menu-button.png" selectedImage:@"Push-Menu.png" target:self selector:@selector(mainMenu:)];
         CCMenu* mainMenuMenu = [CCMenu menuWithItems:mainMenu, nil];
         mainMenuMenu.position = CGPointMake(winSizeActual.width/4, (gameOverHeader.position.y - gameOverHeader.contentSize.height/2) * (1.0/7));
         [self addChild:mainMenuMenu];
         
-        CCMenuItem* store = [CCMenuItemImage itemWithNormalImage:@"Store.png" selectedImage:@"Push-Store.png" target:self selector:@selector(store:)];
+        CCMenuItem* store = [CCMenuItemImage itemWithNormalImage:@"Store-button.png" selectedImage:@"Push-Store.png" target:self selector:@selector(store:)];
         CCMenu* storeMenu = [CCMenu menuWithItems:store, nil];
         storeMenu.position = CGPointMake(winSizeActual.width*3/4, (gameOverHeader.position.y - gameOverHeader.contentSize.height/2) * (1.0/7));
         [self addChild:storeMenu];
@@ -147,8 +147,7 @@
             }];
         }
         
-        
-        
+        [[Chartboost sharedChartboost] showMoreApps];
     }
     return self;
 }

@@ -143,18 +143,6 @@
     [self presentViewController:gameCenterViewController];
 }
 
-//- (void)showLeaderboard {
-//    NSLog(@"leaderboard = %@", self.currentLeaderBoard);
-//    GKLeaderboardViewController *leaderboardController = [[GKLeaderboardViewController alloc] init];
-//    if (leaderboardController != NULL)
-//    {
-//        leaderboardController.category = self.currentLeaderBoard;
-//        //leaderboardController.category = nil;
-//        leaderboardController.timeScope = GKLeaderboardTimeScopeWeek;
-//        leaderboardController.leaderboardDelegate = self;
-//        [self presentModalViewController: leaderboardController animated: YES];
-//    }
-//}
 
 #pragma mark GKGameCenterControllerDelegate method
 - (void)gameCenterViewControllerDidFinish:
@@ -174,30 +162,10 @@
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 -(void)viewAppear:(BOOL)animated
 {
     //[self presentViewController]
 }
-
-
-
-
-
-
-
 
 
 @end

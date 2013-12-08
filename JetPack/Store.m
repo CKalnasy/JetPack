@@ -41,7 +41,7 @@
         [self addChild:storeHeader];
         
         //back button
-        back = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"back-button.png" target:self selector:@selector(back:)];
+        back = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"Push-back.png" target:self selector:@selector(back:)];
         backMenu = [CCMenu menuWithItems:back, nil];
         backMenu.position = CGPointMake(back.contentSize.width/6 + back.contentSize.width/2, (winSizeActual.height - storeHeader.contentSize.height) - back.contentSize.width/6 - back.contentSize.height/2);
         
@@ -49,17 +49,32 @@
         
         
         //menu
-        CCMenuItem* upgrades = [CCMenuItemImage itemWithNormalImage:@"upgrades-button.png" selectedImage:@"upgrades-button.png" target:self selector:@selector(upgrades:)];
-        CCMenuItem* jetpacks = [CCMenuItemImage itemWithNormalImage:@"jetpacks-button.png" selectedImage:@"jetpacks-button.png" target:self selector:@selector(jetpacks:)];
-        CCMenuItem* apparel = [CCMenuItemImage itemWithNormalImage:@"apparel-button.png" selectedImage:@"apparel-button.png" target:self selector:@selector(apparel:)];
-        CCMenuItem* moreCoins = [CCMenuItemImage itemWithNormalImage:@"more-coins-button.png" selectedImage:@"more-coins-button.png" target:self selector:@selector(moreCoins:)];
+        CCMenuItem* upgrades = [CCMenuItemImage itemWithNormalImage:@"upgrades-button.png" selectedImage:@"Push-Upgrades.png" target:self selector:@selector(upgrades:)];
+        CCMenuItem* jetpacks = [CCMenuItemImage itemWithNormalImage:@"jetpack-button.png" selectedImage:@"Push-Jetpack.png" target:self selector:@selector(jetpacks:)];
+        CCMenuItem* apparel = [CCMenuItemImage itemWithNormalImage:@"apparel-button.png" selectedImage:@"Push-Apparel.png" target:self selector:@selector(apparel:)];
+        CCMenuItem* moreCoins = [CCMenuItemImage itemWithNormalImage:@"more-coins-button.png" selectedImage:@"Push-More-coins.png" target:self selector:@selector(moreCoins:)];
         
-        CCMenu* menu = [CCMenu menuWithItems:upgrades, jetpacks, apparel, moreCoins, nil];
-        [menu alignItemsVerticallyWithPadding:upgrades.contentSize.height];
-        menu.position = CGPointMake(winSizeActual.width/2, (winSizeActual.height - storeHeader.contentSize.height)/2);
-        [self addChild:menu];
         
-        excPos = CGPointMake(moreCoins.position.x + moreCoins.contentSize.width/2, moreCoins.position.y + moreCoins.contentSize.height/2);
+        float pos = (backMenu.position.y - back.contentSize.height/2) / 5.0;
+        
+        CCMenu* menuUpgrades = [CCMenu menuWithItems:upgrades, nil];
+        menuUpgrades.position = CGPointMake(winSizeActual.width/2, pos * 4);
+        [self addChild:menuUpgrades];
+        
+        CCMenu* menuJetpacks = [CCMenu menuWithItems:jetpacks, nil];
+        menuJetpacks.position = CGPointMake(winSizeActual.width/2, pos * 3);
+        [self addChild:menuJetpacks];
+        
+        CCMenu* menuApparel = [CCMenu menuWithItems:apparel, nil];
+        menuApparel.position = CGPointMake(winSizeActual.width/2, pos * 2);
+        [self addChild:menuApparel];
+        
+        CCMenu* menuMoreCoins = [CCMenu menuWithItems:moreCoins, nil];
+        menuMoreCoins.position = CGPointMake(winSizeActual.width/2, pos * 1);
+        [self addChild:menuMoreCoins];
+        
+        
+        excPos = CGPointMake(menuMoreCoins.position.x + moreCoins.contentSize.width/2, menuMoreCoins.position.y + moreCoins.contentSize.height/2);
         [self schedule:@selector(updateExclamation:)];
     }
     return self;
@@ -97,7 +112,6 @@
     [rt setPosition:position];
     return rt;
 }
-
 
 //updates the coins
 -(void) onEnter {

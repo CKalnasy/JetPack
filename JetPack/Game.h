@@ -23,7 +23,8 @@
 #define MAX_OBS_PER_SCREEN 5
 #define SCORE_MODIFIER 64
 #define MONEY_BAG_VALUE 10
-#define COINS_TO_CONTINUE 2000 //will want to change this
+#define COINS_TO_CONTINUE 500
+#define POS_TO_FLIP 3.5
 
 #define MAX_HEIGHT ([[UIScreen mainScreen] bounds].size.height) - 375
 
@@ -86,6 +87,7 @@
     
     int numContinuesUsed;
     
+    
     PowerUp* fuelCan;
     int previousFuelCanLoc;
     int numFuelCansAddedBeforeDoubled;
@@ -99,6 +101,12 @@
     BOOL isMenuUp;
     CCLayerColor* opacityLayer;
     
+    CCLabelTTF* continueText1;
+    CCLabelTTF* continueText2;
+    CCRenderTexture* continueText1Stroke;
+    CCRenderTexture* continueText2Stroke;
+    
+    CCSprite* continueCoin;
     CCMenu* continueMenu;
     BOOL hasGameBegun;
     BOOL isGameOver;
@@ -122,8 +130,6 @@
 
 -(id) init;
 -(void) registerWithTouchDispatcher;
--(BOOL) ccTouchBegan:(UITouch *)touch withEvent:(UIEvent *)event;
--(void) ccTouchEnded:(UITouch *)touch withEvent:(UIEvent *)event;
 -(void) accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration;
 -(void) constUpdate:(ccTime)delta;
 -(void) speedUpdate:(ccTime)delta;
@@ -134,15 +140,12 @@
 -(void) cleanUpObs:(ccTime)delta;
 -(void) horizontalMovement:(Obstacles*)spr;
 -(void) makeHorizontalObs:(Obstacles*) obs;
--(void) addCoins;
 -(void) collisionDetection:(ccTime)delta;
 -(void) gameEnded;
 -(void) addFuelBar;
 -(void) updateFuelBar:(ccTime)delta;
 -(void) addPowerUpBar: (PowerUp*)powerUp;
 -(void) updatePowerUpBar:(ccTime)delta;
--(void) addFuelCan;
--(void) collideWithFuelCan;
 -(void) addFuel;
 -(void) isHighScore;
 -(void) pause:(id)sender;

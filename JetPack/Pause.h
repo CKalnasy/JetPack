@@ -12,6 +12,18 @@
 
 @interface Pause : CCLayer {
     CGSize winSize;
+    
+    NSString* on;
+    NSString* onPushed;
+    NSString* off;
+    NSString* offPushed;
+    
+    CCMenuItem* resume;
+    CCMenuItem* soundSwapOn;
+    CCMenuItem* soundSwapOff;
+    CCMenuItemToggle* soundSwapToggle;
+    CCMenuItem* quit;
+    CCMenu* menu;
 }
 
 +(CCScene *) scene;

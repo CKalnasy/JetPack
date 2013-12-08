@@ -9,6 +9,7 @@
 #import "Pause.h"
 #import "MainMenu.h"
 #import "Game.h"
+#import "GlobalDataManager.h"
 
 
 @implementation Pause
@@ -23,11 +24,30 @@
 -(id) init{
     if( (self=[super init])) {
         //menu with resume, quit and sound on/off buttons
-        CCMenuItem* resume = [CCMenuItemImage itemWithNormalImage:@"Classic.png" selectedImage:@"Classic.png" target:self selector:@selector(resumeGame:)];
-        CCMenuItem* soundSwap = [CCMenuItemImage itemWithNormalImage:@"Store.png" selectedImage:@"Store.png" target:self selector:@selector(soundSwap:)];
-        CCMenuItem* quit = [CCMenuItemImage itemWithNormalImage:@"Stats.png" selectedImage:@"Stats.png" target:self selector:@selector(quit:)];
+        resume = [CCMenuItemImage itemWithNormalImage:@"Resume-button.png" selectedImage:@"Push-Resume.png" target:self selector:@selector(resumeGame:)];
         
-        CCMenu* menu = [CCMenu menuWithItems:resume, soundSwap, quit, nil];
+        BOOL isSoundOn = [GlobalDataManager isSonudOnWithDict];
+        if (isSoundOn) {
+            on = @"Sound-on-button.png";
+            onPushed = @"Push-Sound-on.png";
+            off =@"Sound-off-button.png";
+            offPushed = @"Push-Sound-off.png";
+        }
+        else {
+            on = @"Sound-off-button.png";
+            onPushed = @"Push-Sound-off.png";
+            off = @"Sound-on-button.png";
+            offPushed = @"Push-Sound-on.png";
+        }
+        soundSwapOn = [CCMenuItemImage itemWithNormalImage:on selectedImage:onPushed];
+        soundSwapOff = [CCMenuItemImage itemWithNormalImage:off selectedImage:offPushed];
+        soundSwapToggle = [CCMenuItemToggle itemWithTarget:self selector:@selector(soundSwap:) items:soundSwapOn, soundSwapOff, nil];
+        
+        quit = [CCMenuItemImage itemWithNormalImage:@"Quit-button.png" selectedImage:@"Push-Quit.png" target:self selector:@selector(quit:)];
+        
+        
+        
+        menu = [CCMenu menuWithItems:resume, soundSwapToggle, quit, nil];
         [menu alignItemsVertically];
         [self addChild:menu];
         
@@ -44,7 +64,7 @@
 }
 
 -(void) soundSwap:(id)sender{
-    //todo: swap sound
+    //todo: swap the sound
 }
 -(void) quit:(id)sender{
     CCScene* scene = [[CCDirector sharedDirector] runningScene];
