@@ -18,6 +18,10 @@
 	<true/>
 	<key>jetpack selected</key>
 	<string>Jet-Pack-one.png</string>
+	<key>is premium content</key>
+	<false/>
+	<key>all coins</key>
+	<integer>0</integer>
 	<key>is black bought</key>
 	<false/>
 	<key>is blue bought</key>

@@ -14,13 +14,21 @@
 #import "Upgrades.h"
 #import "Jetpacks.h"
 #import "vunglepub.h"
+#import "JetpackIAPHelper.h"
 
+
+@interface Store () {
+    NSArray *_products;
+    NSNumberFormatter * _priceFormatter;
+}
+@end
 
 @implementation Store
 
 +(CCScene *) scene{
     CCScene *scene = [CCScene node];
 	Store *layer = [Store node];
+    layer.tag = STORE_LAYER_TAG;
 	[scene addChild: layer];
 	return scene;
 }
@@ -43,7 +51,7 @@
         //back button
         back = [CCMenuItemImage itemWithNormalImage:@"back-button.png" selectedImage:@"Push-back.png" target:self selector:@selector(back:)];
         backMenu = [CCMenu menuWithItems:back, nil];
-        backMenu.position = CGPointMake(back.contentSize.width/6 + back.contentSize.width/2, (winSizeActual.height - storeHeader.contentSize.height) - back.contentSize.width/6 - back.contentSize.height/2);
+        backMenu.position = CGPointMake(back.contentSize.width/6 + back.contentSize.width/2, (winSizeActual.height - HEADER_SIZE) - back.contentSize.width/6 - back.contentSize.height/2);
         
         [self addChild:backMenu];
         
@@ -54,28 +62,64 @@
         CCMenuItem* apparel = [CCMenuItemImage itemWithNormalImage:@"apparel-button.png" selectedImage:@"Push-Apparel.png" target:self selector:@selector(apparel:)];
         CCMenuItem* moreCoins = [CCMenuItemImage itemWithNormalImage:@"more-coins-button.png" selectedImage:@"Push-More-coins.png" target:self selector:@selector(moreCoins:)];
         
+        float pos;
+        CCMenu* menuUpgrades;
+        CCMenu* menuJetpacks;
+        CCMenu* menuApparel;
+        CCMenu* menuMoreCoins;
         
-        float pos = (backMenu.position.y - back.contentSize.height/2) / 5.0;
-        
-        CCMenu* menuUpgrades = [CCMenu menuWithItems:upgrades, nil];
-        menuUpgrades.position = CGPointMake(winSizeActual.width/2, pos * 4);
-        [self addChild:menuUpgrades];
-        
-        CCMenu* menuJetpacks = [CCMenu menuWithItems:jetpacks, nil];
-        menuJetpacks.position = CGPointMake(winSizeActual.width/2, pos * 3);
-        [self addChild:menuJetpacks];
-        
-        CCMenu* menuApparel = [CCMenu menuWithItems:apparel, nil];
-        menuApparel.position = CGPointMake(winSizeActual.width/2, pos * 2);
-        [self addChild:menuApparel];
-        
-        CCMenu* menuMoreCoins = [CCMenu menuWithItems:moreCoins, nil];
-        menuMoreCoins.position = CGPointMake(winSizeActual.width/2, pos * 1);
-        [self addChild:menuMoreCoins];
+        if (![GlobalDataManager isPremiumContentWithDict]) {
+            pos = (backMenu.position.y - back.contentSize.height/2) / 6.0;
+            
+            menuUpgrades = [CCMenu menuWithItems:upgrades, nil];
+            menuUpgrades.position = CGPointMake(winSizeActual.width/2, pos * 5);
+            [self addChild:menuUpgrades];
+            
+            menuJetpacks = [CCMenu menuWithItems:jetpacks, nil];
+            menuJetpacks.position = CGPointMake(winSizeActual.width/2, pos * 4);
+            [self addChild:menuJetpacks];
+            
+            menuApparel = [CCMenu menuWithItems:apparel, nil];
+            menuApparel.position = CGPointMake(winSizeActual.width/2, pos * 3);
+            [self addChild:menuApparel];
+            
+            menuMoreCoins = [CCMenu menuWithItems:moreCoins, nil];
+            menuMoreCoins.position = CGPointMake(winSizeActual.width/2, pos * 2);
+            [self addChild:menuMoreCoins];
+            
+            adFree = [CCMenuItemImage itemWithNormalImage:@"Ad-free-button.png" selectedImage:@"Push-Ad-free.png" disabledImage:@"Push-Ad-free.png" target:self selector:@selector(adFree:)];
+            
+            menuAdFree = [CCMenu menuWithItems:adFree, nil];
+            menuAdFree.position = CGPointMake(winSizeActual.width/2, pos * 1);
+            [self addChild:menuAdFree];
+            
+            adFree.isEnabled = NO;
+        }
+        else {
+            pos = (backMenu.position.y - back.contentSize.height/2) / 5.0;
+            
+            menuUpgrades = [CCMenu menuWithItems:upgrades, nil];
+            menuUpgrades.position = CGPointMake(winSizeActual.width/2, pos * 4);
+            [self addChild:menuUpgrades];
+            
+            menuJetpacks = [CCMenu menuWithItems:jetpacks, nil];
+            menuJetpacks.position = CGPointMake(winSizeActual.width/2, pos * 3);
+            [self addChild:menuJetpacks];
+            
+            menuApparel = [CCMenu menuWithItems:apparel, nil];
+            menuApparel.position = CGPointMake(winSizeActual.width/2, pos * 2);
+            [self addChild:menuApparel];
+            
+            menuMoreCoins = [CCMenu menuWithItems:moreCoins, nil];
+            menuMoreCoins.position = CGPointMake(winSizeActual.width/2, pos * 1);
+            [self addChild:menuMoreCoins];
+        }
         
         
         excPos = CGPointMake(menuMoreCoins.position.x + moreCoins.contentSize.width/2, menuMoreCoins.position.y + moreCoins.contentSize.height/2);
         [self schedule:@selector(updateExclamation:)];
+        
+        [self reloads];
     }
     return self;
 }
@@ -98,7 +142,7 @@
     CGPoint position = ccpSub(originalPos, positionOffset);
     
     [rt begin];
-    for (int i=0; i<360; i+=60) // you should optimize that for your needs
+    for (int i=0; i<360; i+=30) // you should optimize that for your needs
     {
         [label setPosition:ccp(bottomLeft.x + sin(CC_DEGREES_TO_RADIANS(i))*size, bottomLeft.y + cos(CC_DEGREES_TO_RADIANS(i))*size)];
         [label visit];
@@ -159,6 +203,21 @@
     [[CCDirector sharedDirector] pushScene:[MoreCoins scene]];
 }
 
+-(void) adFree:(id)sender{
+    CCMenuItem* send = (CCMenuItem*)sender;
+    if (!send.isEnabled) {
+        return;
+    }
+    
+    SKProduct *product = _products[3];
+    
+    NSLog(@"Buying %@...", product.productIdentifier);
+    [[JetpackIAPHelper sharedInstance] buyProduct:product];
+    
+    
+    [GlobalDataManager setIsPremiumContentWithDict:YES];
+}
+
 -(void) back:(id)sender{
     [[CCDirector sharedDirector] popScene];
 }
@@ -174,6 +233,39 @@
         [self addChild:exclamation];
     }
 }
+
+
+-(void) reloads {
+    _products = nil;
+    [[JetpackIAPHelper sharedInstance] requestProductsWithCompletionHandler:^(BOOL success, NSArray *products) {
+        if (success) {
+            _products = products;
+            //[self updatePrices];
+            adFree.isEnabled = YES;
+        }
+//        else {
+//            UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Cannot Connect to App Store" message:nil delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+//            [alert show];
+//        }
+    }];
+}
+
+-(void) setAdFreeButtonEnabled:(BOOL) enabled {
+    adFree.isEnabled = enabled;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 -(void) dealloc{

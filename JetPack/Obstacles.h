@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "cocos2d.h"
 
+#define NUMBER_OF_STAGES 7
+
 @interface Obstacles : CCSprite {
     float speed;
     NSString* type;

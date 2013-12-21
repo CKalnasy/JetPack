@@ -10,6 +10,7 @@
 #import "Player.h"
 #import "Clothes.h"
 #import "GlobalDataManager.h"
+#import "MoreCoins.h"
 
 
 @implementation Apparel
@@ -18,6 +19,7 @@
     CCScene *scene = [CCScene node];
 	Apparel *layer = [Apparel node];
 	[scene addChild: layer];
+    [layer setTag:APPAREL_SCENE_TAG];
 	return scene;
 }
 
@@ -30,11 +32,7 @@
         background.anchorPoint = CGPointMake(0.5, 0);
         background.position = CGPointMake(background.contentSize.width/2, 0);
         [self addChild:background z:-100];
-        
-//        CCSprite* apparelHeader = [CCSprite spriteWithFile:@"apparel-header.png"];
-//        apparelHeader.position = CGPointMake(apparelHeader.contentSize.width/2, winSizeActual.height - apparelHeader.contentSize.height/2);
-//        [self addChild:apparelHeader z:9];
-        
+                
         CCSprite* apparelHeaderTop = [CCSprite spriteWithFile:@"apparel-top.png"];
         apparelHeaderTop.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - apparelHeaderTop.contentSize.height/2);
         [self addChild:apparelHeaderTop z:9];
@@ -82,10 +80,98 @@
 }
 
 
+-(void) updateNumCoins {
+    NSString* text = [NSString stringWithFormat:@"%i",[GlobalDataManager totalCoinsWithDict]];
+    coins.string = text;
+    
+    [self removeChild:stroke];
+    stroke = nil;
+    stroke = [self createStroke:coins size:0.5 color:ccBLACK];
+    stroke.position = coins.position;
+    [self addChild:stroke];
+}
+
 
 -(void) back:(id)sender {
     [[CCDirector sharedDirector] popScene];
 }
+
+
+
+
+
+//pop up menu stuff
+-(void) notEnoughCoins {    
+    if (isMenuUp) {
+        return;
+    }
+    isMenuUp = YES;
+    textBox = [CCSprite spriteWithFile:@"Text-box.png"];
+    textBox.position = CGPointMake(winSizeActual.width/2, winSizeActual.height/2);
+    [self addChild:textBox z:6];
+    
+    NSString* text = [NSString stringWithFormat:@"%i   ",[GlobalDataManager totalCoinsWithDict]];
+    buyMoreCoins1 = [CCLabelTTF labelWithString:@"YOU HAVE:  " fontName:@"Orbitron-Medium" fontSize:16];
+    buyMoreCoins2 = [CCLabelTTF labelWithString:text fontName:@"Orbitron-Light" fontSize:25];
+    buyMoreCoins3 = [CCLabelTTF labelWithString:@"BUY MORE COINS?" fontName:@"Orbitron-Medium" fontSize:22];
+    coin = [CCSprite spriteWithFile:@"store-coin.png"];
+    float pos = textBox.contentSize.height/4;
+    
+    buyMoreCoins1.position = CGPointMake(textBox.position.x - buyMoreCoins2.contentSize.width/2 - coin.contentSize.width/2, textBox.position.y + textBox.contentSize.height/2 - pos);
+    [self addChild:buyMoreCoins1 z:8];
+    
+    buyMoreCoins1Stroke = [self createStroke:buyMoreCoins1 size:0.5 color:ccBLACK];
+    buyMoreCoins1Stroke.position = buyMoreCoins1.position;
+    [self addChild:buyMoreCoins1Stroke z:7];
+    
+    buyMoreCoins2.position = CGPointMake(buyMoreCoins1.position.x + buyMoreCoins1.contentSize.width/2 + buyMoreCoins2.contentSize.width/2, buyMoreCoins1.position.y);
+    [self addChild:buyMoreCoins2 z:8];
+    
+    buyMoreCoins2Stroke = [self createStroke:buyMoreCoins2 size:0.5 color:ccBLACK];
+    buyMoreCoins2Stroke.position = buyMoreCoins2.position;
+    [self addChild:buyMoreCoins2Stroke z:7];
+    
+    coin.position = CGPointMake(buyMoreCoins2.position.x + buyMoreCoins2.contentSize.width/2, buyMoreCoins2.position.y + 1.5);
+    [self addChild:coin z:8];
+    
+    buyMoreCoins3.position = CGPointMake(textBox.position.x, textBox.position.y + textBox.contentSize.height/2 - 2 * pos);
+    [self addChild:buyMoreCoins3 z:8];
+    
+    buyMoreCoins3Stroke = [self createStroke:buyMoreCoins3 size:0.5 color:ccBLACK];
+    buyMoreCoins3Stroke.position = buyMoreCoins3.position;
+    [self addChild:buyMoreCoins3Stroke z:7];
+    
+    CCMenuItem* yes = [CCMenuItemImage itemWithNormalImage:@"Yes-button.png" selectedImage:@"Push-Yes.png" target:self selector:@selector(getMoreCoins:)];
+    CCMenuItem* no = [CCMenuItemImage itemWithNormalImage:@"No-button.png" selectedImage:@"Push-No.png" target:self selector:@selector(dontGetMoreCoins:)];
+    buyMoreCoinsMenu = [CCMenu menuWithItems:no, yes, nil];
+    [buyMoreCoinsMenu alignItemsHorizontallyWithPadding:(textBox.contentSize.width - 2 * yes.contentSize.width)/2];
+    buyMoreCoinsMenu.position = CGPointMake(textBox.position.x, textBox.position.y + textBox.contentSize.height/2 - 3 * pos);
+    [self addChild:buyMoreCoinsMenu z:8];
+}
+
+
+-(void) getMoreCoins:(id)sender {
+    [[CCDirector sharedDirector] popScene];
+    [[CCDirector sharedDirector] pushScene:[MoreCoins scene]];
+}
+-(void) dontGetMoreCoins:(id)sender {
+    [self removeChild:textBox];
+    [self removeChild:buyMoreCoins1];
+    [self removeChild:buyMoreCoins2];
+    [self removeChild:buyMoreCoins3];
+    [self removeChild:buyMoreCoins1Stroke];
+    [self removeChild:buyMoreCoins2Stroke];
+    [self removeChild:buyMoreCoins3Stroke];
+    [self removeChild:buyMoreCoinsMenu];
+    [self removeChild:coin];
+    
+    isMenuUp = NO;
+}
+
+
+
+
+
 
 
 -(CCRenderTexture*) createStroke: (CCLabelTTF*) label   size:(float)size   color:(ccColor3B)cor

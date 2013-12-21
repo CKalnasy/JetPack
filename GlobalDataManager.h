@@ -34,6 +34,27 @@
     BOOL isSoundOn;
     
     Chartboost* cb;
+
+    
+    BOOL isBlackBought;
+    BOOL isBlueBought;
+    BOOL isBrownBought;
+    BOOL isGreenBought;
+    BOOL isGreyBought;
+    BOOL isMaroonBought;
+    BOOL isMilitaryGreenBought;
+    BOOL isNavyBought;
+    BOOL isOrangeBought;
+    BOOL isPinkBought;
+    BOOL isPurpleBought;
+    BOOL isRedBought;
+    BOOL isTanBought;
+    BOOL isTurquoiseBought;
+    BOOL isYellowBought;
+    
+    BOOL isPremiumContent;
+    int numberOfAllCoins;
+    int timeTrialHighScore;
 }
 
 @property (nonatomic, readwrite) int scoreRaw;
@@ -53,6 +74,25 @@
 @property (nonatomic, readwrite) int numSecondsInvy;
 @property (nonatomic, readwrite) BOOL isSoundOn;
 
+@property (nonatomic, readwrite) BOOL isBlackBought;
+@property (nonatomic, readwrite) BOOL isBlueBought;
+@property (nonatomic, readwrite) BOOL isBrownBought;
+@property (nonatomic, readwrite) BOOL isGreenBought;
+@property (nonatomic, readwrite) BOOL isGreyBought;
+@property (nonatomic, readwrite) BOOL isMaroonBought;
+@property (nonatomic, readwrite) BOOL isMilitaryGreenBought;
+@property (nonatomic, readwrite) BOOL isNavyBought;
+@property (nonatomic, readwrite) BOOL isOrangeBought;
+@property (nonatomic, readwrite) BOOL isPinkBought;
+@property (nonatomic, readwrite) BOOL isPurpleBought;
+@property (nonatomic, readwrite) BOOL isRedBought;
+@property (nonatomic, readwrite) BOOL isTanBought;
+@property (nonatomic, readwrite) BOOL isTurquoiseBought;
+@property (nonatomic, readwrite) BOOL isYellowBought;
+
+@property (nonatomic, readwrite) BOOL isPremiumContent;
+@property (nonatomic, readwrite) int numberOfAllCoins;
+@property (nonatomic, readwrite) int timeTrialHighScore;
 
 
 + (GlobalDataManager*)sharedGlobalDataManager;
@@ -104,6 +144,62 @@
 
 +(void) setIsSoundOnWithDict:(BOOL)on;
 +(BOOL) isSonudOnWithDict;
+
+
+
++(void) setIsBlackBoughtWithDict:(BOOL)bought;
++(BOOL) isBlackBoughtWithDict;
+
++(void) setIsBlueBoughtWithDict:(BOOL)bought;
++(BOOL) isBlueBoughtWithDict;
+
++(void) setIsBrownBoughtWithDict:(BOOL)bought;
++(BOOL) isBrownBoughtWithDict;
+
++(void) setIsGreenBoughtWithDict:(BOOL)bought;
++(BOOL) isGreenBoughtWithDict;
+
++(void) setIsGreyBoughtWithDict:(BOOL)bought;
++(BOOL) isGreyBoughtWithDict;
+
++(void) setIsMaroonBoughtWithDict:(BOOL)bought;
++(BOOL) isMaroonBoughtWithDict;
+
++(void) setIsMilitaryGreenBoughtWithDict:(BOOL)bought;
++(BOOL) isMilitaryGreenBoughtWithDict;
+
++(void) setIsNavyBoughtWithDict:(BOOL)bought;
++(BOOL) isNavyBoughtWithDict;
+
++(void) setIsOrangeBoughtWithDict:(BOOL)bought;
++(BOOL) isOrangeBoughtWithDict;
+
++(void) setIsPinkBoughtWithDict:(BOOL)bought;
++(BOOL) isPinkBoughtWithDict;
+
++(void) setIsPurpleBoughtWithDict:(BOOL)bought;
++(BOOL) isPurpleBoughtWithDict;
+
++(void) setIsRedBoughtWithDict:(BOOL)bought;
++(BOOL) isRedBoughtWithDict;
+
++(void) setIsTanBoughtWithDict:(BOOL)bought;
++(BOOL) isTanBoughtWithDict;
+
++(void) setIsTurquoiseBoughtWithDict:(BOOL)bought;
++(BOOL) isTurquoiseBoughtWithDict;
+
++(void) setIsYellowBoughtWithDict:(BOOL)bought;
++(BOOL) isYellowBoughtWithDict;
+
++(void) setIsPremiumContentWithDict:(BOOL)premium;
++(BOOL) isPremiumContentWithDict;
+
++(void) setNumberOfAllCoinsWithDict:(int)num;
++(int) numberOfAllCoinsWithDict;
+
++(void) setTimeTrialHighScoreWithDict:(int)num;
++(int) timeTrialHighScoreWithDict;
 
 
 @end

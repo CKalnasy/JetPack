@@ -248,7 +248,7 @@
     //give all classes access to velocity in y direction (by accessing player)
     [[GlobalDataManager sharedGlobalDataManager] setPlayer:player];
     
-    if (player.fuel <= 0) {
+    if (player.fuel <= 0 && ![player isBoostingEnabled]) {
         player.fuel = 0;
         [[GlobalDataManager sharedGlobalDataManager] setFuel:player.fuel];
         
@@ -257,6 +257,8 @@
         [self schedule:@selector(gravityUpdate:)];
         [self unschedule:@selector(idlingjetpack:)];
         didRunOutOfFuel = YES;
+        
+        [self ranOutOfFuel];
     }
 }
 
@@ -457,7 +459,11 @@
 //        }
         
         //coin stuff
-        int coinLocToAdd = 40 * (numFewCoinsAdded + 1) + 5 * numFewCoinsAdded + coinRand;
+        //int coinLocToAdd = 40 * (numFewCoinsAdded + 1) + 5 * numFewCoinsAdded + coinRand;
+        int coinLocToAdd = 107 * (numFewCoinsAdded + 1) + 13 * numFewCoinsAdded + coinRand;
+        int rand = arc4random()%9 - 4;
+        coinLocToAdd += rand;
+        
         if (coinLocToAdd <= scoreRaw + winSize.height*2 / SCORE_MODIFIER) {
             //if the coins are supposed to be added to a pathed obs
             if ((previousPathedObsLoc < scoreRaw + winSize.height*2 / SCORE_MODIFIER)) {
@@ -471,10 +477,12 @@
         }
         
         //pathed obs stuff
-        int locToAdd = 55 - (5 * numPathedObsAdded) + previousPathedObsLoc;
+        //int locToAdd = 55 - (5 * numPathedObsAdded) + previousPathedObsLoc;
+        int locToAdd = 147 - (13 * numPathedObsAdded) + previousPathedObsLoc;
         
         if (numPathedObsAdded > 3) {
-            locToAdd = 40 + previousPathedObsLoc;
+            //locToAdd = 40 + previousPathedObsLoc;
+            locToAdd = 107 + previousPathedObsLoc;
         }
         
         if (locToAdd <= scoreRaw + winSize.height * 2 / SCORE_MODIFIER) {
@@ -528,7 +536,7 @@
     numObsAdded++;
     lastObsAdded = firstObs;
     
-    for(int i=2; i<21; i++){
+    for(int i=2; i<11; i++){
         Obstacles* obs = [Obstacles obstacle:@"obstacle1.png"];
         [obs setType:@"obstacle"];
         
@@ -913,7 +921,7 @@
         [self addChild:obs z:0 tag:numObsAdded];
         numObsAdded++;
         
-        if (i == (int)(numObsPerScreen*1.5*1.5) - 1) {
+        if (i + 1 >= numObsPerScreen*1.5*1.5) {
             lastObsAdded = obs;
         }
         
@@ -929,11 +937,16 @@
         return;
     }
     
-    int locToAdd = 60 + (numPowerUpsAdded * 7.5) + lastPowerUpEndOrLoc;
+    //int locToAdd = 60 + (numPowerUpsAdded * 7.5) + lastPowerUpEndOrLoc;
+    int locToAdd = 160 + (numPowerUpsAdded * 20) + lastPowerUpEndOrLoc;
     
     if (numPowerUpsAdded >= 8) {
-        locToAdd = 120 + lastPowerUpEndOrLoc;
+        //locToAdd = 120 + lastPowerUpEndOrLoc;
+        locToAdd = 320 + lastPowerUpEndOrLoc;
     }
+    
+    int rand = arc4random() % 9 - 4;
+    locToAdd += rand;
     
     if (locToAdd <= scoreRaw + winSize.height * 2 / SCORE_MODIFIER) {
         Obstacles* best = (Obstacles*)[self getChildByTag:lastObsDeleted];
@@ -948,7 +961,7 @@
     
         //choose which power up to add
         int rand = arc4random() % 100 + 1;
-        if (rand <= 500) {
+        if (rand <= 50) {
             [self addBoost:pointToAdd];
         }
         else if (rand <= 70) {
@@ -1058,10 +1071,12 @@
 }
 
 -(void) pathedObsToAdd {
-    int locToAdd = 55 - (5 * numPathedObsAdded) + previousPathedObsLoc;
+    //int locToAdd = 55 - (5 * numPathedObsAdded) + previousPathedObsLoc;
+    int locToAdd = 147 - (13 * numPathedObsAdded) + previousPathedObsLoc;
     
     if (numPathedObsAdded > 3) {
-        locToAdd = 40 + previousPathedObsLoc;
+        //locToAdd = 40 + previousPathedObsLoc;
+        locToAdd = 107 + previousPathedObsLoc;
     }
     
     Obstacles* best = (Obstacles*)[self getChildByTag:lastObsAdded.tag]; //reference to what lastobsadded references
@@ -1104,13 +1119,7 @@
     int rand = arc4random() % 100 + 1;
     int numCoinsToAdd;
     
-    if (rand <= 5) {
-        numCoinsToAdd = 4;
-    }
-    else if (rand <= 10) {
-        numCoinsToAdd = 5;
-    }
-    else if (rand <= 20) {
+    if (rand <= 20) {
         numCoinsToAdd = 6;
     }
     else if (rand <= 60) {
@@ -1125,13 +1134,14 @@
     
     int bagRandPos = arc4random() % (numCoinsToAdd * 2);
     
-    //coins.contentSize.width = 12 at most
-    int x = arc4random() % (int)(winSize.width - 12) + 6;
-    
+    //coins.contentSize.width = 20 at most. 5 for padding
+    int x = arc4random() % (int)(winSize.width - 25) + 6;
+    Obstacles* last;
     for (int i = 0; i < numCoinsToAdd; i++) {
         [coinLoc addObject:[NSNumber numberWithInt:numObsAdded]];
         
-        int randStartingPos = arc4random() % 5 + 1;
+        int randStartingPos = arc4random() % 8;
+        randStartingPos = 0;
         NSString* name = [NSString stringWithFormat:@"Coin%i.png",randStartingPos];
         
         Obstacles* coin;
@@ -1146,17 +1156,24 @@
         }
         
         
-        coin.position = CGPointMake(x, point.y + winSize.height/numObsPerScreen + i*2*coin.contentSize.height);
+        //coin.position = CGPointMake(x, point.y + winSize.height/numObsPerScreen + i*c.contentSize.height*2);
+        if (i == 0) {
+            coin.position = CGPointMake(x, point.y + winSize.height/numObsPerScreen);
+        }
+        else {
+            coin.position = CGPointMake(x, last.position.y + last.contentSize.height/2 + coin.contentSize.height + 4.5);
+        }
         [self addChild:coin z:0 tag:numObsAdded];
         numObsAdded++;
         
+        last = coin;
         
         if (i == numCoinsToAdd-1) {
             lastObsAdded = coin;
         }
     }
     
-    [self schedule:@selector(updateCoins:) interval:1/4.0];
+    [self schedule:@selector(updateCoins:) interval:1/6.0];
     
     return lastObsAdded.position.y - (point.y + winSize.height/numObsPerScreen);
 }
@@ -1174,10 +1191,11 @@
     int bagRandPos = arc4random() % (numCoinsToAdd * 4);
     
     unsigned int randNum = arc4random(); //must have max of 2^32-1 for arc4random()
-    Obstacles* c = [Obstacles obstacle:@"Coin1.png"];
-    
+    //Obstacles* c = [Obstacles obstacle:@"Coin1.png"];
+    Obstacles* last;
     for (int i = 0; i < numCoinsToAdd; i++) {
-        int startingPos = arc4random()%5 + 1;
+        int startingPos = arc4random()%7;
+        startingPos = 0;
         NSString* name = [NSString stringWithFormat:@"Coin%i.png", startingPos];
         
         Obstacles* coin;
@@ -1191,8 +1209,15 @@
             coin.coinStage = startingPos;
         }
         
-        int x = randNum % (int)(winSize.width - c.contentSize.width) + c.contentSize.width/2;
-        coin.position = CGPointMake(x, point.y + winSize.height/numObsPerScreen + i*c.contentSize.height*2);
+        int x = randNum % (int)(winSize.width - 25) + 12;
+//        coin.position = CGPointMake(x, point.y + winSize.height/numObsPerScreen + i*c.contentSize.height*2);
+        if (i == 0) {
+            coin.position = CGPointMake(x, point.y + winSize.height/numObsPerScreen);
+        }
+        else {
+            coin.position = CGPointMake(x, last.position.y + last.contentSize.height/2 + coin.contentSize.height/2 + 4.5);
+        }
+        last = coin;
         
         [self addChild:coin z:0 tag:numObsAdded];
         numObsAdded++;
@@ -1201,7 +1226,7 @@
             lastObsAdded = coin;
         }
     }
-    [self schedule:@selector(updateCoins:) interval:1/4.0];
+    [self schedule:@selector(updateCoins:) interval:1/6.5];
 }
 -(void) updateCoins:(ccTime)delta{
     BOOL atLeastOneCoin = NO;
@@ -1284,8 +1309,6 @@
         
         //call a boost method to shoot up the player
         [self schedule:@selector(boostUp:)];
-        
-        player.fuel = player.maxFuel;
         
         //stop detecting colisions
         doDetectCollisions = NO;
@@ -1605,17 +1628,17 @@
             Obstacles* last = (Obstacles*)[self getChildByTag:next.tag-1];
             
             if (next.position.x - last.position.x > obs.contentSize.width*1.2) {
-                fuelCan.position = CGPointMake(next.position.x - obs.contentSize.width, obs.position.y);
+                fuelCan.position = CGPointMake(next.position.x - /*obs.contentSize.width*/ 90, obs.position.y);
                 [self addChild:fuelCan];
                 break;
             }
             if (i == 2 && next.position.x > obs.contentSize.width*3.35) {
-                fuelCan.position = CGPointMake(next.position.x + obs.contentSize.width, obs.position.y);
+                fuelCan.position = CGPointMake(next.position.x + /*obs.contentSize.width*/ 90, obs.position.y);
                 [self addChild: fuelCan];
                 break;
             }
             if (i == 0 && left.position.x > obs.contentSize.width) {
-                fuelCan.position = CGPointMake(left.position.x - obs.contentSize.width, obs.position.y);
+                fuelCan.position = CGPointMake(left.position.x - /*obs.contentSize.width*/ 90, obs.position.y);
                 [self addChild:fuelCan];
                 break;
             }
@@ -1689,11 +1712,13 @@
 }
 
 -(void) whenToAddFuelCan:(ccTime)delta{
-    int locToAdd = (90 + (25 * (numFuelCansAddedAfterDoubled + 1))) / FUEL_CONSTANT + previousFuelCanLoc;
+    //int locToAdd = (90 + (25 * (numFuelCansAddedAfterDoubled + 1))) / FUEL_CONSTANT + previousFuelCanLoc;
+    int locToAdd = (240 + (67 * (numFuelCansAddedAfterDoubled + 1))) / FUEL_CONSTANT + previousFuelCanLoc;
     
     //if the fuel can is supposed to be added higher than the max it can be added
     if (numFuelCansAddedAfterDoubled + 1 >= FUEL_CANS_BEFORE_MAX) {
-        locToAdd = (100 + (25 * FUEL_CANS_BEFORE_MAX)) / FUEL_CONSTANT + previousFuelCanLoc; //test this
+        //locToAdd = (100 + (25 * FUEL_CANS_BEFORE_MAX)) / FUEL_CONSTANT + previousFuelCanLoc;
+        locToAdd = (267 + (67 * FUEL_CANS_BEFORE_MAX)) / FUEL_CONSTANT + previousFuelCanLoc; //test this
     }
     
     //if fuel can should be added at a score of less than or equal to 2 screen sizes higher
@@ -1776,32 +1801,63 @@
     continueText1 = [CCLabelTTF labelWithString:@"CONTINUE PLAYING?" fontName:@"Orbitron-Medium" fontSize:21];
     continueText2 = [CCLabelTTF labelWithString:@"500   " fontName:@"Orbitron-Medium" fontSize:21];
     continueCoin = [CCSprite spriteWithFile:@"store-coin.png"];
+    continueTotalCoinsCoin = [CCSprite spriteWithFile:@"store-coin.png"];
     
-    continueText1.position = CGPointMake(winSizeActual.width/2, winSizeActual.height/2 + continueText2.contentSize.height * 1.5);
-    [self addChild:continueText1 z:1];
+    textBox = [CCSprite spriteWithFile:@"Text-box.png"];
+    textBox.position = CGPointMake(winSizeActual.width/2, winSizeActual.height/2 - 20);
+    [self addChild:textBox z:5];
     
-    continueText2.position = CGPointMake(winSizeActual.width/2, winSizeActual.height/2);
-    [self addChild:continueText2 z:1];
+    textBox2 = [CCSprite spriteWithFile:@"Text-box.png"];
+    textBox2.position = CGPointMake(winSizeActual.width/2, winSizeActual.height/2 + 20);
+    [self addChild:textBox2 z:5];
     
-    continueCoin.position = CGPointMake(continueText2.position.x + continueText2.contentSize.width/2, continueText2.position.y);
-    [self addChild:continueCoin z:1];
+    int totalCoins = [GlobalDataManager totalCoinsWithDict];
+    NSString* text = [NSString stringWithFormat:@"%i   ",totalCoins];
+    continueTotalCoins2Text = [CCLabelTTF labelWithString:text fontName:@"Orbitron-Light" fontSize:25];
+    
+    continueTotalCoinsText = [CCLabelTTF labelWithString:@"YOU HAVE:  " fontName:@"Orbitron-Medium" fontSize:16];
+    continueTotalCoinsText.position = CGPointMake(winSizeActual.width/2 - continueTotalCoinsCoin.contentSize.width - continueTotalCoins2Text.contentSize.width/2, winSizeActual.height/2 + continueText2.contentSize.height * 3.75 - 20);
+    [self addChild:continueTotalCoinsText z:8];
+    
+    continueTotalCoinsStroke = [self createStroke:continueTotalCoinsText size:0.5 color:ccBLACK];
+    continueTotalCoinsStroke.position = continueTotalCoinsText.position;
+    [self addChild:continueTotalCoinsStroke z:7];
+    
+    continueTotalCoins2Text.position = CGPointMake(continueTotalCoinsText.position.x + continueTotalCoinsText.contentSize.width/2 + continueTotalCoins2Text.contentSize.width/2, continueTotalCoinsText.position.y);
+    [self addChild:continueTotalCoins2Text z:8];
+    
+    continueTotalCoins2Stroke = [self createStroke:continueTotalCoins2Text size:0.5 color:ccBLACK];
+    continueTotalCoins2Stroke.position = continueTotalCoins2Text.position;
+    [self addChild:continueTotalCoins2Stroke z:7];
+    
+    continueTotalCoinsCoin.position = CGPointMake(continueTotalCoins2Text.position.x + continueTotalCoins2Text.contentSize.width/2, continueTotalCoinsText.position.y + 1.5);
+    [self addChild:continueTotalCoinsCoin z:8];
+    
+    continueText1.position = CGPointMake(winSizeActual.width/2, winSizeActual.height/2 + continueText2.contentSize.height * 1.5 - 20);
+    [self addChild:continueText1 z:8];
+    
+    continueText2.position = CGPointMake(winSizeActual.width/2, winSizeActual.height/2 - 20);
+    [self addChild:continueText2 z:8];
+    
+    continueCoin.position = CGPointMake(continueText2.position.x + continueText2.contentSize.width/2, continueText2.position.y + 1);
+    [self addChild:continueCoin z:8];
     
     continueText1Stroke = [self createStroke:continueText1 size:0.5 color:ccBLACK];
     continueText1Stroke.position = continueText1.position;
-    [self addChild:continueText1Stroke];
+    [self addChild:continueText1Stroke z:7];
     
     continueText2Stroke = [self createStroke:continueText2 size:0.5 color:ccBLACK];
     continueText2Stroke.position = continueText2.position;
-    [self addChild:continueText2Stroke];
+    [self addChild:continueText2Stroke z:7];
     
     
     CCMenuItem* continueYes = [CCMenuItemImage itemWithNormalImage:@"Yes-button.png" selectedImage:@"Push-Yes.png" target:self selector:@selector(doContinue:)];
     CCMenuItem* continueNo = [CCMenuItemImage itemWithNormalImage:@"No-button.png" selectedImage:@"Push-No.png" target:self selector:@selector(doNotContinue:)];
     
     continueMenu = [CCMenu menuWithItems:continueNo, continueYes, nil];
-    [continueMenu alignItemsHorizontallyWithPadding:continueYes.contentSize.width];
+    [continueMenu alignItemsHorizontallyWithPadding:(textBox.contentSize.width - 2 * continueNo.contentSize.width)/2];
     continueMenu.position = CGPointMake(winSizeActual.width/2, continueText2.position.y - continueText2.contentSize.height * 1.5);
-    [self addChild:continueMenu];
+    [self addChild:continueMenu z:8];
     
     self.touchEnabled = NO;
 }
@@ -1871,12 +1927,19 @@
     
     [self schedule:@selector(cont:)];
     
-    [self removeChild:continueMenu cleanup:NO];
+    [self removeChild:continueMenu];
     [self removeChild:continueText1];
     [self removeChild:continueText1Stroke];
     [self removeChild:continueText2];
     [self removeChild:continueText2Stroke];
     [self removeChild:continueCoin];
+    [self removeChild:textBox];
+    [self removeChild:textBox2];
+    [self removeChild:continueTotalCoinsText];
+    [self removeChild:continueTotalCoinsStroke];
+    [self removeChild:continueTotalCoins2Text];
+    [self removeChild:continueTotalCoins2Stroke];
+    [self removeChild:continueTotalCoinsCoin];
 }
 -(void) doNotContinue:(id)sender {
     [self gameEnded];
@@ -1888,6 +1951,20 @@
     isGameOver = YES;
     GameEnded* ge = [GameEnded node];
     [self addChild:ge z:10];
+    
+    [self removeChild:textBox];
+    [self removeChild:textBox2];
+    [self removeChild:continueTotalCoinsText];
+    [self removeChild:continueTotalCoinsStroke];
+    [self removeChild:continueTotalCoins2Text];
+    [self removeChild:continueTotalCoins2Stroke];
+    [self removeChild:continueTotalCoinsCoin];
+    [self removeChild:continueText1];
+    [self removeChild:continueText2];
+    [self removeChild:continueCoin];
+    [self removeChild:continueText1Stroke];
+    [self removeChild:continueText2Stroke];
+    [self removeChild:continueMenu];
 }
 
 -(void)unschedulePowerUpLookers{
@@ -1939,23 +2016,25 @@
 //game ended stuff
 -(void) gameEnded{
     //add to the total number of coins
-    int totalCoins = [GlobalDataManager sharedGlobalDataManager].totalCoins + numCoins;
-    [[GlobalDataManager sharedGlobalDataManager] setTotalCoins:totalCoins];
+    [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] + numCoins];
     
+    [GlobalDataManager setNumberOfAllCoinsWithDict:[GlobalDataManager numberOfAllCoinsWithDict] + numCoins];
+    [[GameKitHelper sharedGameKitHelper] submitScore:[GlobalDataManager numberOfAllCoinsWithDict] category:@"com.JetPack.TotalCoins"];
+
     //reset fuel
     [[GlobalDataManager sharedGlobalDataManager] setFuel:player.maxFuel];
     
-    //reset numCoins
-    [[GlobalDataManager sharedGlobalDataManager] setNumCoins:0];
+    //total games
+    [GlobalDataManager setTotalGamesWithDict:[GlobalDataManager totalGamesWithDict] + 1];
     
     [self isHighScore];
 }
 //is the score received on the just finished game the highest
 -(void) isHighScore{
-    if (scoreActual > [GlobalDataManager sharedGlobalDataManager].highScore) {
-        [[GlobalDataManager sharedGlobalDataManager] setHighScore:scoreActual];
+    if (scoreActual > [GlobalDataManager highScoreWithDict]) {
+        [GlobalDataManager setHighScoreWithDict:scoreActual];
         
-        [[GameKitHelper sharedGameKitHelper] submitScore:scoreActual category:@"jetpack_test"];
+        [[GameKitHelper sharedGameKitHelper] submitScore:scoreActual category:@"com.JetPack.ClassicHighScore"];
     }
 }
 
@@ -1992,7 +2071,7 @@
             if (([temp.type rangeOfString:@"obstacle" options:NSCaseInsensitiveSearch].location != NSNotFound)  &&  (player.velocity.y > 0 || player.velocity.y <= -4) && doDetectCollisions) {
                 //if statement: if its a obstacle and the player is moving up (i.e. hit the bottom) or the player is comimg crashing down on an obsacle. Then he loses.
                 
-                //[self playerHitObs];
+                [self playerHitObs];
             }
             else if ([temp.type isEqualToString:@"coin"] || [temp.type isEqualToString:@"money bag"]) {
                 //add to the coins count
@@ -2136,6 +2215,10 @@
     [self addChild:innerPowerUpBar];
 }
 
+-(void) ranOutOfFuel {
+    [player schedule:@selector(ranOutOfFuel:) interval:1.0/10];
+}
+
 
 //pause game and resume game stuff
 -(void) pause:(id)sender{
@@ -2207,7 +2290,7 @@
     CGPoint position = ccpSub(originalPos, positionOffset);
     
     [rt begin];
-    for (int i=0; i<360; i+=60) // you should optimize that for your needs
+    for (int i=0; i<360; i+=30) // you should optimize that for your needs
     {
         [label setPosition:ccp(bottomLeft.x + sin(CC_DEGREES_TO_RADIANS(i))*size, bottomLeft.y + cos(CC_DEGREES_TO_RADIANS(i))*size)];
         [label visit];
@@ -2238,15 +2321,7 @@
  
  
  *** todo ***
- 
- main menu
- other jetpacks
 
- in-app purchases (need bank acc. for)
- game ended scene (wait until artwork)
- settings (wait until artwork)
- 
- will need to figure out how high the player can go (1/3 size, 1/2 size... idk)
  
  
  */

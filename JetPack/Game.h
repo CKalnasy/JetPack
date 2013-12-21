@@ -21,7 +21,7 @@
 #define FUEL_IDLING_CONSTANT 0.5
 #define NUM_FUEL_CANS_DOUBLED_UP 5
 #define MAX_OBS_PER_SCREEN 5
-#define SCORE_MODIFIER 64
+#define SCORE_MODIFIER 24
 #define MONEY_BAG_VALUE 10
 #define COINS_TO_CONTINUE 500
 #define POS_TO_FLIP 3.5
@@ -101,10 +101,18 @@
     BOOL isMenuUp;
     CCLayerColor* opacityLayer;
     
+    CCLabelTTF* continueTotalCoinsText;
+    CCRenderTexture* continueTotalCoinsStroke;
+    CCLabelTTF* continueTotalCoins2Text;
+    CCRenderTexture* continueTotalCoins2Stroke;
+    CCSprite* continueTotalCoinsCoin;
+    
     CCLabelTTF* continueText1;
     CCLabelTTF* continueText2;
     CCRenderTexture* continueText1Stroke;
     CCRenderTexture* continueText2Stroke;
+    CCSprite* textBox;
+    CCSprite* textBox2;
     
     CCSprite* continueCoin;
     CCMenu* continueMenu;
@@ -122,6 +130,8 @@
     
     BOOL added;
     int numSecs;
+    
+    int ranOutOfFuelSec;
 }
 
 @property (nonatomic, readwrite) BOOL isGameOver;

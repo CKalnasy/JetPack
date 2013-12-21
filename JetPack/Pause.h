@@ -12,6 +12,7 @@
 
 @interface Pause : CCLayer {
     CGSize winSize;
+    CGSize winSizeActual;
     
     NSString* on;
     NSString* onPushed;

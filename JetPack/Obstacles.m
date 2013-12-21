@@ -14,12 +14,22 @@
 
 +(id) obstacle:(NSString*)name
 {
+//    if ([name rangeOfString:@"Coin" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+//        name = @"Coin3.png";
+//    }
 	return [[self alloc] initWithObstacle:name];
 }
 
 
 -(id) initWithObstacle:(NSString*)name {
     if (( self = [super initWithFile:name] )){
+//        if ([name rangeOfString:@"Coin" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+//            coinStage = arc4random()%8;
+//            name = [NSString stringWithFormat:@"Coin%i.png",coinStage];
+//            
+//            self.texture = [[CCSprite spriteWithFile:name]texture];
+//        }
+        
         speed = 0;
         rect = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y - self.contentSize.height/2, self.contentSize.width, self.contentSize.height);
     }
@@ -65,8 +75,8 @@
     return coinStage;
 }
 -(void) incrementCoinStage {
-    if (coinStage == 5) {
-        coinStage = 1;
+    if (coinStage == NUMBER_OF_STAGES) {
+        coinStage = 0;
     }
     else {
         coinStage++;

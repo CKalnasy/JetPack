@@ -168,6 +168,37 @@
     isFlameChanging = YES;
 }
 
+-(void) ranOutOfFuel:(ccTime)delta {
+    if (ranOutOfFuelSec == 0) {
+        if (flameSmall.visible) {
+            [self unschedule:@selector(ranOutOfFuel:)];
+            return;
+        }
+        flameMedium.visible = YES;
+        flameLarge.visible = NO;
+    }
+    else if (ranOutOfFuelSec == 1) {
+        flameSmall.visible = YES;
+        flameMedium.visible = NO;
+    }
+    else if (ranOutOfFuelSec == 2) {
+        flameMedium.visible = YES;
+        flameSmall.visible = NO;
+    }
+    else if (ranOutOfFuelSec == 3) {
+        flameSmall.visible = YES;
+        flameMedium.visible = NO;
+    }
+    else if (ranOutOfFuelSec >= 4 && ranOutOfFuelSec <= 8) {
+        flameSmall.visible = NO;
+    }
+    else {
+        [self unschedule:@selector(ranOutOfFuel:)];
+    }
+    
+    ranOutOfFuelSec++;
+}
+
 
 -(CGRect) playerRect{
     CGRect ret = CGRectMake(self.position.x - self.contentSize.width/2, self.position.y - self.contentSize.height/2, self.contentSize.width, self.contentSize.height);

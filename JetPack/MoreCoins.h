@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "cocos2d.h"
 
-#define NUMBER_OF_COINS_PER_VIEW 75
+#define NUMBER_OF_COINS_PER_VIEW 50
 #define MORE_COINS_LAYER_TAG 4
 #define HEADER_SIZE 67
 
@@ -18,10 +18,16 @@
     CGSize winSizeActual;
     CCLabelTTF* coins;
     CCRenderTexture* stroke;
+    CCMenuItem* back;
+    CCMenu* backMenu;
     
     CCMenu* moreCoins1Menu;
     CCMenu* moreCoins2Menu;
     CCMenu* moreCoins3Menu;
+    
+    CCMenuItem* moreCoins1;
+    CCMenuItem* moreCoins2;
+    CCMenuItem* moreCoins3;
     
     CCSprite* exclamation;
     CGPoint excPos;
@@ -34,6 +40,6 @@
 
 +(CCScene *) scene;
 -(void) adClosed;
-+(void) increaseCoins:(int) num;
+-(void) updateCoins;
 
 @end

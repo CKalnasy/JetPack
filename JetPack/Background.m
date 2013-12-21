@@ -57,6 +57,10 @@
         bg2.position = CGPointMake(bg2.contentSize.width/2, bg1.position.y + bg1.contentSize.height);
         [self addChild:bg2 z:-10];
         
+        blueBG = [CCSprite spriteWithFile:@"blue-background.png"];
+        blueBG.position = CGPointMake(winSizeActual.width/2, winSizeActual.height/2);
+        [self addChild:blueBG z:-1000];
+        
         //scrolling velocities
         backgroundScrollSpeed = CGPointMake(0, 5);
         
@@ -71,18 +75,27 @@
         stroke.position = scoreLabel.position;
         [self addChild:stroke z:0];
         
+        m = [CCLabelTTF labelWithString:@"M" fontName:@"Orbitron-Light" fontSize:15];
+        m.position = CGPointMake(scoreLabel.position.x + scoreLabel.contentSize.width/2 + m.contentSize.width/2 + 2, scoreLabel.position.y);
+        [self addChild:m z:1];
+        
+        mStroke = [self createStroke:m size:0.5 color:ccBLACK];
+        mStroke.position = m.position;
+        [self addChild:mStroke z:0];
+        
+        
         //shows the coins
         coinsLabel = [CCLabelTTF labelWithString:@"000" fontName:@"Orbitron-Light" fontSize:16];
-        coinsLabel.anchorPoint = CGPointMake(1, 0.5);
-		coinsLabel.position = CGPointMake(winSizeActual.width*5/6, scoreLabel.position.y);
+        //coinsLabel.anchorPoint = CGPointMake(1, 0.5);
+		coinsLabel.position = CGPointMake((int)winSizeActual.width*5/6 - coinsLabel.contentSize.width/2, (int)scoreLabel.position.y);
         [self addChild:coinsLabel z:1];
         
         coinStroke = [self createStroke:coinsLabel size:0.5 color:ccBLACK];
-        coinStroke.position = CGPointMake(coinsLabel.position.x - coinsLabel.contentSize.width/2, coinsLabel.position.y);
+        coinStroke.position = coinsLabel.position;
         [self addChild:coinStroke z:0];
         
         CCSprite* coinIcon = [CCSprite spriteWithFile:@"store-coin.png"];
-        coinIcon.position = CGPointMake(coinsLabel.position.x + coinIcon.contentSize.width * 3/4, coinsLabel.position.y + 1.5);
+        coinIcon.position = CGPointMake(coinsLabel.position.x + coinIcon.contentSize.width * 3/4 + coinsLabel.contentSize.width/2, coinsLabel.position.y + 1.5);
         [self addChild:coinIcon];
         
         
@@ -132,7 +145,7 @@
         [self removeChild:coinStroke cleanup:YES];
         coinStroke = nil;
         coinStroke = [self createStroke:coinsLabel size:0.5 color:ccBLACK];
-        coinStroke.position = CGPointMake(coinsLabel.position.x - coinsLabel.contentSize.width/2, coinsLabel.position.y);
+        coinStroke.position = coinsLabel.position;
         [self addChild:coinStroke z:0];
     }
 }
@@ -178,6 +191,9 @@
             
         didTransition = YES;
         [self schedule:@selector(shake:) interval:1.0/30];
+        
+        [self removeChild:blueBG];
+        blueBG = nil;
     }
     
     //space!!!
@@ -243,7 +259,7 @@
         return;
     }
     hasShook = YES;
-    if ((player.position.y + player.contentSize.height/2 + (-bgTransition.position.y) >= 450)) {
+    if ((player.position.y + player.contentSize.height/2 + (-bgTransition.position.y) >= 400)) {
         bgTransition.position = CGPointMake(winSizeActual.width/2, bgTransition.position.y);
         bg1.position = CGPointMake(winSizeActual.width/2, bg1.position.y);
         bg2.position = CGPointMake(winSizeActual.width/2, bg2.position.y);
@@ -324,7 +340,7 @@
     CGPoint position = ccpSub(originalPos, positionOffset);
     
     [rt begin];
-    for (int i=0; i<360; i+=15) // you should optimize that for your needs
+    for (int i=0; i<360; i+=30) // you should optimize that for your needs
     {
         [label setPosition:ccp(bottomLeft.x + sin(CC_DEGREES_TO_RADIANS(i))*size, bottomLeft.y + cos(CC_DEGREES_TO_RADIANS(i))*size)];
         [label visit];

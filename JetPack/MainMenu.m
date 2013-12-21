@@ -15,6 +15,8 @@
 #import <RevMobAds/RevMobAds.h>
 #import "GlobalDataManager.h"
 #import "vunglepub.h"
+#import "Settings.h"
+#import "TimeTrial.h"
 
 
 
@@ -36,15 +38,16 @@
         winSizeActual = [[CCDirector sharedDirector] winSize];
         
         //background init
-        CCSprite* bg = [CCSprite spriteWithFile:@"base background.png"];
-        bg.anchorPoint = CGPointMake(0, 0);
-        [self addChild:bg z:-10];
+        CCSprite* background = [CCSprite spriteWithFile:@"base background.png"];
+        background.anchorPoint = CGPointMake(0.5, 0);
+        background.position = CGPointMake(background.contentSize.width/2, 0);
+        [self addChild:background z:-100];
         
         //header init
-        CCSprite* header = [CCSprite spriteWithFile:@"store-header.png"];
-        header.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - header.contentSize.height/2 - 20);
-        [self addChild:header];
-        
+        CCSprite* header = [CCSprite spriteWithFile:@"GAME-OVER.png"];
+        header.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - header.contentSize.height/2);
+        //[self addChild:header];
+       
         //player init
         NSString* color = [GlobalDataManager playerColorWithDict];
         NSString* name = [NSString stringWithFormat:@"%@%@%@", @"Jeff-", color, @".png"];
@@ -70,7 +73,6 @@
         
         //menu init
         float pos = (header.position.y - header.contentSize.height/2 - player.contentSize.height) / 7.0;
-        
         
         menuClassic = [CCMenu menuWithItems:classic, nil];
         menuClassic.position = CGPointMake(winSizeActual.width/2, pos * 6 + player.contentSize.height);
@@ -123,10 +125,10 @@
     [[CCDirector sharedDirector] pushScene:[Stats scene]];
 }
 -(void) timeTrial:(id)sender{
-    
+    [[CCDirector sharedDirector] replaceScene:[TimeTrial scene]];
 }
 -(void) settings:(id)sender{
-    
+    [[CCDirector sharedDirector] pushScene:[Settings scene]];
 }
 
 

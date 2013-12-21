@@ -25,6 +25,7 @@
     Player* player;
     CCSprite* bg1;
     CCSprite* bg2;
+    CCSprite* blueBG;
     
     CCLabelTTF* scoreLabel;
     CCLabelTTF* wordScore;
@@ -32,6 +33,9 @@
     CCLabelTTF* fuelLabel;
     CCRenderTexture* stroke;
     CCRenderTexture* coinStroke;
+    
+    CCLabelTTF* m;
+    CCRenderTexture* mStroke;
     
     CGPoint playerVelocity;
     CGPoint backgroundScrollSpeed;

@@ -27,6 +27,5 @@
 @property (unsafe_unretained, readonly) CCDirectorIOS *director;
 
 +(AppController*)appDelegate;
-+(UIImage*) screenshotWithStartNode:(CCNode*)startNode;
 
 @end

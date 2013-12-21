@@ -10,6 +10,7 @@
 #import "MainMenu.h"
 #import "Game.h"
 #import "GlobalDataManager.h"
+#import "SimpleAudioEngine.h"
 
 
 @implementation Pause
@@ -23,6 +24,9 @@
 
 -(id) init{
     if( (self=[super init])) {
+        winSize = CGSizeMake(320, 480);
+        winSizeActual = [[CCDirector sharedDirector]winSize];
+        
         //menu with resume, quit and sound on/off buttons
         resume = [CCMenuItemImage itemWithNormalImage:@"Resume-button.png" selectedImage:@"Push-Resume.png" target:self selector:@selector(resumeGame:)];
         
@@ -48,8 +52,17 @@
         
         
         menu = [CCMenu menuWithItems:resume, soundSwapToggle, quit, nil];
-        [menu alignItemsVertically];
+        [menu alignItemsVerticallyWithPadding:resume.contentSize.height/2];
         [self addChild:menu];
+        
+        
+        CCSprite* textBox1 = [CCSprite spriteWithFile:@"Text-box.png"];
+        textBox1.position = CGPointMake(menu.position.x, menu.position.y + resume.contentSize.height);
+        [self addChild:textBox1 z:-10];
+        
+        CCSprite* textBox2 = [CCSprite spriteWithFile:@"Text-box.png"];
+        textBox2.position = CGPointMake(menu.position.x, menu.position.y - resume.contentSize.height);
+        [self addChild:textBox2 z:-10];
         
     }
     return self;
@@ -64,7 +77,9 @@
 }
 
 -(void) soundSwap:(id)sender{
-    //todo: swap the sound
+    [GlobalDataManager setIsSoundOnWithDict:![GlobalDataManager isSonudOnWithDict]];
+    
+    [[SimpleAudioEngine sharedEngine] setMute:[GlobalDataManager isSonudOnWithDict]];
 }
 -(void) quit:(id)sender{
     CCScene* scene = [[CCDirector sharedDirector] runningScene];

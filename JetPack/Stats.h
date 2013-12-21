@@ -9,8 +9,15 @@
 #import <Foundation/Foundation.h>
 #import "cocos2d.h"
 
+#define HEADER_SIZE 67
+#define POS_OFFSET 10
+
+
 @interface Stats : CCLayer {
-    
+    CGSize winSize;
+    CGSize winSizeActual;
+    CCMenuItem* back;
+    CCMenu* backMenu;
 }
 
 +(CCScene *) scene;

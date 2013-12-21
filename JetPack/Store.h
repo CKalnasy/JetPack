@@ -9,6 +9,9 @@
 #import <Foundation/Foundation.h>
 #import "cocos2d.h"
 
+#define HEADER_SIZE 67
+#define STORE_LAYER_TAG 19
+
 @interface Store : CCLayer {
     CGSize winSize;
     CGSize winSizeActual;
@@ -18,10 +21,14 @@
     CCMenuItem* back;
     CCLabelTTF* coins;
     
+    CCMenuItem* adFree;
+    CCMenu* menuAdFree;
+    
     CCSprite* exclamation;
     CGPoint excPos;
 }
 
 +(CCScene *) scene;
+-(void) setAdFreeButtonEnabled:(BOOL) enabled;
 
 @end

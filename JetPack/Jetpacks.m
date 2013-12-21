@@ -32,7 +32,7 @@
         
         
         //more coins header
-        CCSprite* moreCoinsHeader = [CCSprite spriteWithFile:@"jet-pack-header.png"];
+        CCSprite* moreCoinsHeader = [CCSprite spriteWithFile:@"jetpack-header.png"];
         moreCoinsHeader.position = CGPointMake(winSizeActual.width/2, winSizeActual.height - moreCoinsHeader.contentSize.height/2);
         [self addChild:moreCoinsHeader z:-10];
         
@@ -58,6 +58,19 @@
         stroke = [self createStroke:coins size:0.5 color:ccBLACK];
         stroke.position = CGPointMake(coins.position.x - stroke.contentSize.width/2, coins.position.y);
         [self addChild:stroke];
+        
+        textBox = [CCSprite spriteWithFile:@"Text-box.png"];
+        textBox.position = CGPointMake(winSizeActual.width/2, (backMenu.position.y - back.contentSize.height/2)/2);
+        //[self addChild:textBox z:5];
+        
+        CCLabelTTF* comingSoon = [CCLabelTTF labelWithString:@"COMING SOON!!" fontName:@"Orbitron-Medium" fontSize:32];
+        //comingSoon.position = CGPointMake(winSizeActual.width/2, (backMenu.position.y - back.contentSize.height/2)/2);
+        comingSoon.position = CGPointMake(winSizeActual.width/2, winSizeActual.height/2);
+        [self addChild:comingSoon z:8];
+        
+        CCRenderTexture* comingSoonStroke = [self createStroke:comingSoon size:0.5 color:ccBLACK];
+        comingSoonStroke.position = comingSoon.position;
+        [self addChild:comingSoonStroke z:7];
     }
     return self;
 }
@@ -86,7 +99,7 @@
     CGPoint position = ccpSub(originalPos, positionOffset);
     
     [rt begin];
-    for (int i=0; i<360; i+=60) // you should optimize that for your needs
+    for (int i=0; i<360; i+=30) // you should optimize that for your needs
     {
         [label setPosition:ccp(bottomLeft.x + sin(CC_DEGREES_TO_RADIANS(i))*size, bottomLeft.y + cos(CC_DEGREES_TO_RADIANS(i))*size)];
         [label visit];

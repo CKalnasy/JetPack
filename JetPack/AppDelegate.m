@@ -80,7 +80,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {    
     [RevMobAds startSessionWithAppID:@"522e77a1db7709c9f9000031"];
-    [RevMobAds session].testingMode = RevMobAdsTestingModeWithAds;
+    //[RevMobAds session].testingMode = RevMobAdsTestingModeWithAds;
     
     [self vungleStart];
     [VGVunglePub setDelegate:self];
@@ -372,20 +372,23 @@
     }
     
     // Otherwise return NO to display the interstitial
-    NSLog(@"not going to display interstitial at location %@", location);
-    
-    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
-    [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
-        [fs showAd];
-        NSLog(@"Ad loaded");
-    } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
-        NSLog(@"Ad error: %@",error);
-        //attempt to fill with other ad network here
-    } onClickHandler:^{
-        NSLog(@"Ad clicked");
-    } onCloseHandler:^{
-        NSLog(@"Ad closed");
-    }];
+//    NSLog(@"not going to display interstitial at location %@", location);
+//    
+//    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+//    [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
+//        
+//        
+//        
+//        [fs showAd];
+//        NSLog(@"Ad loaded");
+//    } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
+//        NSLog(@"Ad error: %@",error);
+//        //attempt to fill with other ad network here
+//    } onClickHandler:^{
+//        NSLog(@"Ad clicked");
+//    } onCloseHandler:^{
+//        NSLog(@"Ad closed");
+//    }];
     
     return NO;
 }
@@ -535,24 +538,6 @@
         [scene adClosed];
     }
 }
-
-
-
-
-+(UIImage*) screenshotWithStartNode:(CCNode*)startNode {
-    [CCDirector sharedDirector].nextDeltaTimeZero = YES;
-    
-    CGSize winSize = [CCDirector sharedDirector].winSize;
-    CCRenderTexture* rtx =
-    [CCRenderTexture renderTextureWithWidth:winSize.width
-                                     height:winSize.height];
-    [rtx begin];
-    [startNode visit];
-    [rtx end];
-    
-    return [rtx getUIImage];
-}
-
 
 
 @end

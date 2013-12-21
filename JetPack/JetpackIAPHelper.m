@@ -16,10 +16,10 @@
     static JetpackIAPHelper * sharedInstance;
     dispatch_once(&once, ^{
         NSSet * productIdentifiers = [NSSet setWithObjects:
-                                      @"1000_coins",
-                                      @"5000_coins",
-                                      @"10000_coins",
-                                      @"premium_version",
+                                      @"com.JetPack.1000_Coins",
+                                      @"com.JetPack.5000_Coins",
+                                      @"com.JetPack.10000_Coins",
+                                      @"com.JetPack.PremiumVersion",
                                       nil];
         sharedInstance = [[self alloc] initWithProductIdentifiers:productIdentifiers];
     });

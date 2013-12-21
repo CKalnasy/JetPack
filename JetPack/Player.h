@@ -41,6 +41,8 @@
     
     CCSprite* flatFeet;
     CCSprite* angledFeet;
+    
+    int ranOutOfFuelSec;
 }
 
 @property (nonatomic, readwrite) BOOL isInvyEnabled;
@@ -95,5 +97,6 @@
 
 
 -(void) updateFlame:(ccTime)delta;
+-(void) ranOutOfFuel:(ccTime)delta;
 
 @end

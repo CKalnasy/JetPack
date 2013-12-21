@@ -9,6 +9,9 @@
 
 #import "IAPHelper.h"
 #import <StoreKit/StoreKit.h>
+#import "GlobalDataManager.h"
+#import "MoreCoins.h"
+#import "Store.h"
 
 NSString *const IAPHelperProductPurchasedNotification = @"IAPHelperProductPurchasedNotification";
 
@@ -145,6 +148,10 @@ NSString *const IAPHelperProductPurchasedNotification = @"IAPHelperProductPurcha
     {
         NSLog(@"Transaction error: %@", transaction.error.localizedDescription);
     }
+    if ([transaction.error.localizedDescription isEqualToString:@"Cannot connect to iTunes Store"] && transaction.error.code != SKErrorPaymentCancelled) {
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Cannot Connect to iTunes Store" message:nil delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+        [alert show];
+    }
     
     [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
 }
@@ -157,6 +164,48 @@ NSString *const IAPHelperProductPurchasedNotification = @"IAPHelperProductPurcha
     [[NSUserDefaults standardUserDefaults] synchronize];
     [[NSNotificationCenter defaultCenter] postNotificationName:IAPHelperProductPurchasedNotification object:productIdentifier userInfo:nil];
     
+    if ([productIdentifier isEqualToString:@"com.JetPack.1000_Coins"]) {
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] + 1000];
+        
+        [GlobalDataManager setNumberOfAllCoinsWithDict:[GlobalDataManager numberOfAllCoinsWithDict] + 1000];
+        [[GameKitHelper sharedGameKitHelper] submitScore:[GlobalDataManager numberOfAllCoinsWithDict] category:@"com.JetPack.TotalCoins"];
+        
+        CCScene* scene = [[CCDirector sharedDirector] runningScene];
+        MoreCoins* layer = (MoreCoins*)[scene getChildByTag:MORE_COINS_LAYER_TAG];
+        [layer updateCoins];
+    }
+    else if ([productIdentifier isEqualToString:@"com.JetPack.5000_Coins"]) {
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] + 5000];
+        
+        [GlobalDataManager setNumberOfAllCoinsWithDict:[GlobalDataManager numberOfAllCoinsWithDict] + 5000];
+        [[GameKitHelper sharedGameKitHelper] submitScore:[GlobalDataManager numberOfAllCoinsWithDict] category:@"com.JetPack.TotalCoins"];
+        
+        CCScene* scene = [[CCDirector sharedDirector] runningScene];
+        MoreCoins* layer = (MoreCoins*)[scene getChildByTag:MORE_COINS_LAYER_TAG];
+        [layer updateCoins];
+    }
+    else if ([productIdentifier isEqualToString:@"com.JetPack.10000_Coins"]) {
+        [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] + 10000];
+        
+        [GlobalDataManager setNumberOfAllCoinsWithDict:[GlobalDataManager numberOfAllCoinsWithDict] + 10000];
+        [[GameKitHelper sharedGameKitHelper] submitScore:[GlobalDataManager numberOfAllCoinsWithDict] category:@"com.JetPack.TotalCoins"];
+        
+        CCScene* scene = [[CCDirector sharedDirector] runningScene];
+        MoreCoins* layer = (MoreCoins*)[scene getChildByTag:MORE_COINS_LAYER_TAG];
+        [layer updateCoins];
+    }
+    else if ([productIdentifier isEqualToString:@"com.JetPack.PremiumVersion"]){
+        [GlobalDataManager setIsPremiumContentWithDict:YES];
+        
+        CCScene* scene = [[CCDirector sharedDirector] runningScene];
+        Store* layer = (Store*)[scene getChildByTag:STORE_LAYER_TAG];
+        [layer setAdFreeButtonEnabled: NO];
+    }
+}
+
+
+- (void)restoreCompletedTransactions {
+    [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
 }
 
 

@@ -17,6 +17,8 @@
     
     CCLabelTTF* coins;
     CCRenderTexture* stroke;
+    
+    CCSprite* textBox;
 }
 
 +(CCScene *) scene;
