@@ -11,6 +11,7 @@
 #import "Obstacles.h"
 #import "Player.h"
 #import "PowerUp.h"
+#import "SimpleAudioEngine.h"
 
 #define GAME_LAYER_TAG 0
 #define GAME_SCENE_TAG 1
@@ -132,6 +133,7 @@
     int numSecs;
     
     int ranOutOfFuelSec;
+    ALuint effect;
 }
 
 @property (nonatomic, readwrite) BOOL isGameOver;

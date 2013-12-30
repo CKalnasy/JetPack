@@ -79,7 +79,9 @@ NSString *const IAPHelperProductPurchasedNotification = @"IAPHelperProductPurcha
               skProduct.price.floatValue);
     }
     
-    _completionHandler(YES, skProducts);
+    if (_completionHandler) {
+        _completionHandler(YES, skProducts);
+    }
     _completionHandler = nil;
     
 }
@@ -149,7 +151,7 @@ NSString *const IAPHelperProductPurchasedNotification = @"IAPHelperProductPurcha
         NSLog(@"Transaction error: %@", transaction.error.localizedDescription);
     }
     if ([transaction.error.localizedDescription isEqualToString:@"Cannot connect to iTunes Store"] && transaction.error.code != SKErrorPaymentCancelled) {
-        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Cannot Connect to iTunes Store" message:nil delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Cannot connect to iTunes Store" message:nil delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
         [alert show];
     }
     
@@ -163,6 +165,9 @@ NSString *const IAPHelperProductPurchasedNotification = @"IAPHelperProductPurcha
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:productIdentifier];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [[NSNotificationCenter defaultCenter] postNotificationName:IAPHelperProductPurchasedNotification object:productIdentifier userInfo:nil];
+    
+    UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Thank you, your purchase was successful" message:nil delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+    [alert show];
     
     if ([productIdentifier isEqualToString:@"com.JetPack.1000_Coins"]) {
         [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] + 1000];

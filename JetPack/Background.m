@@ -117,7 +117,6 @@
         for (int i = 0; i < zeros; i++) {
             scoreString = [@"0" stringByAppendingString:scoreString];
         }
-        
         [scoreLabel setString: scoreString];
         
         [self removeChild:stroke cleanup:YES];
@@ -138,7 +137,6 @@
         for (int i = 0; i < zeros; i++) {
             coins = [@"0" stringByAppendingString:coins];
         }
-        
         
         [coinsLabel setString: coins];
         

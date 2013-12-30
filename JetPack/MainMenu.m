@@ -17,6 +17,7 @@
 #import "vunglepub.h"
 #import "Settings.h"
 #import "TimeTrial.h"
+#import "SimpleAudioEngine.h"
 
 
 
@@ -105,6 +106,8 @@
         
         
         [self schedule:@selector(updateExclamation:)];
+        
+        [[SimpleAudioEngine sharedEngine] setMute:![GlobalDataManager isSonudOnWithDict]];
     }
 	return self;
 }

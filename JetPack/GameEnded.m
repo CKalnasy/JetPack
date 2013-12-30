@@ -30,7 +30,7 @@
     if( (self=[super init])) {
         winSize = CGSizeMake(320, 480);
         winSizeActual = [[CCDirector sharedDirector] winSize];
-        
+        [[SimpleAudioEngine sharedEngine] stopBackgroundMusic];
         
         //game ended header
         CCSprite* gameOverHeader = [CCSprite spriteWithFile:@"GAME-OVER.png"];

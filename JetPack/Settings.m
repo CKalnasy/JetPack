@@ -46,7 +46,7 @@
         float pos = (backMenu.position.y - back.contentSize.height/2) / 3.0;
         
         BOOL isSoundOn = [GlobalDataManager isSonudOnWithDict];
-        if (isSoundOn) {
+        if (!isSoundOn) {
             on = @"Sound-on-button.png";
             onPushed = @"Push-Sound-on.png";
             off =@"Sound-off-button.png";
@@ -85,7 +85,7 @@
 -(void) soundOnOff:(id)sender {
     [GlobalDataManager setIsSoundOnWithDict:![GlobalDataManager isSonudOnWithDict]];
     
-    [[SimpleAudioEngine sharedEngine] setMute:[GlobalDataManager isSonudOnWithDict]];
+    [[SimpleAudioEngine sharedEngine] setMute:![GlobalDataManager isSonudOnWithDict]];
 }
 
 -(void) restore:(id)sender {

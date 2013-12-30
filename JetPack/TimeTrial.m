@@ -105,7 +105,10 @@
     
     if (![player areFeetAngled]) {
         [player setAngledFeet:YES];
+        [[SimpleAudioEngine sharedEngine] playBackgroundMusic:@"jetpack.wav" loop:YES];
     }
+    
+    [[SimpleAudioEngine sharedEngine] setBackgroundMusicVolume:1.0];
     
     CCLOG(@"touches began");
 }
@@ -114,6 +117,8 @@
     [self schedule:@selector(gravityUpdate:)];
     [self unschedule:@selector(speedUpdate:)];
     hasGameBegun = YES;
+    
+    [[SimpleAudioEngine sharedEngine] setBackgroundMusicVolume:0.2];
     
     CCLOG(@"touches ended");
 }

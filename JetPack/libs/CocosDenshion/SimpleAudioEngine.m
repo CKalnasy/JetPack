@@ -217,4 +217,14 @@ static CDBufferManager *bufferManager = nil;
 	}
 }
 
+#pragma mark my shizz
+-(int) playEffect:(NSString*) file loop:(BOOL) loop
+{
+    int handle = [[SimpleAudioEngine sharedEngine] playEffect:file];
+    if (loop) {
+        alSourcei(handle, AL_LOOPING, 1);
+    }
+    return handle;
+}
+
 @end

@@ -92,6 +92,8 @@
         
         doDetectCollisions = YES;
         
+        [[SimpleAudioEngine sharedEngine] preloadEffect:@"coin.wav"];
+        
         //adds touches input.  begins update methods
         self.touchEnabled=YES;
         
@@ -107,7 +109,6 @@
 
 -(void) registerWithTouchDispatcher{
     [[[CCDirector sharedDirector] touchDispatcher] addStandardDelegate:self priority:0];
-    //    [[[CCDirector sharedDirector] touchDispatcher] addTargetedDelegate:self priority:0 swallowsTouches:YES];
 }
 
 -(void) ccTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -121,6 +122,13 @@
     
     if (!isGameRunning) {
         [self schedule:@selector(idlingjetpack:)];
+        if (![GlobalDataManager isSonudOnWithDict]) {
+            [[SimpleAudioEngine sharedEngine] setMute:NO];
+        }
+        [[SimpleAudioEngine sharedEngine] playBackgroundMusic:@"jetpack.wav" loop:YES];
+        if (![GlobalDataManager isSonudOnWithDict]) {
+            [[SimpleAudioEngine sharedEngine] setMute:YES];
+        }
     }
     isGameRunning = YES;
     
@@ -130,6 +138,8 @@
     if (![player areFeetAngled]) {
         [player setAngledFeet:YES];
     }
+    
+    [[SimpleAudioEngine sharedEngine] setBackgroundMusicVolume:1.0];
     
     CCLOG(@"touches began");
 }
@@ -141,6 +151,8 @@
     [self schedule:@selector(gravityUpdate:)];
     [self unschedule:@selector(speedUpdate:)];
     hasGameBegun = YES;
+    
+    [[SimpleAudioEngine sharedEngine] setBackgroundMusicVolume:0.2];
     
     CCLOG(@"touches ended");
 }
@@ -187,9 +199,9 @@
     
     
     //flips the player appropiately when player changes direction
-    if ((previousAcc > 0 && acceleration.x < 0)  ||  (previousAcc < 0 && acceleration.x > 0)) {
+    if ((previousAcc >= 0 && acceleration.x < 0)  ||  (previousAcc <= 0 && acceleration.x > 0)) {
         posBeforeFlip = player.position.x;
-        didChangeLeftToRight = (previousAcc < 0 && acceleration.x > 0);
+        didChangeLeftToRight = (previousAcc <= 0 && acceleration.x > 0);
     }
     if (didChangeLeftToRight) {
         if (player.position.x >= posBeforeFlip + POS_TO_FLIP) {
@@ -338,8 +350,6 @@
         //self.isTouchEnabled = NO;
         //[self unschedule:@selector(speedUpdate:)];
         
-        //todo: player ran out of fuel
-        //may want to make it so that the jetpack gives 3 bursts of fuel after running out
     }
 }
 
@@ -2081,13 +2091,14 @@
                 else {
                     numCoins += MONEY_BAG_VALUE;
                 }
+                [[SimpleAudioEngine sharedEngine] playEffect:@"coin.wav"];
                 
                 [[GlobalDataManager sharedGlobalDataManager] setNumCoins:numCoins];
                
-                //todo: remove the coin, not move it
                 //position the coin outside of the viewing window and make it not visible
-                [temp setVisible:NO];
-                temp.position = CGPointMake(winSize.width * 2, temp.position.y);
+//                [temp setVisible:NO];
+//                temp.position = CGPointMake(winSize.width * 2, temp.position.y);
+                [self removeChild:temp];
             }
             else if (CGRectIntersectsRect([player feetRect], [temp bottomRect])  &&  ([temp.type rangeOfString:@"obstacle" options:NSCaseInsensitiveSearch].location != NSNotFound)  &&  (player.velocity.y <= 0 && player.velocity.y > -4) && !didRunOutOfFuel) {
                 //if statement: if the player comes in contact with an obstacle and he isn't coming crashing down on it, he will land on it
@@ -2267,6 +2278,7 @@
 
 -(void) quitGame{
     [self gameEnded];
+    [[SimpleAudioEngine sharedEngine] stopBackgroundMusic];
     [[CCDirector sharedDirector] replaceScene:[MainMenu scene]];
 }
 

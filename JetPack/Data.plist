@@ -14,8 +14,8 @@
 	<integer>5</integer>
 	<key>max seconds boost</key>
 	<integer>5</integer>
-	<key>sound on</key>
-	<true/>
+	<key>is sound on</key>
+	<false/>
 	<key>jetpack selected</key>
 	<string>Jet-Pack-one.png</string>
 	<key>is premium content</key>
