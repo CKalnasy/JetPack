@@ -46,10 +46,6 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>1.0.4</string>
-	<key>FacebookAppID</key>
-	<string>613957471973850</string>
-	<key>FacebookDisplayName</key>
-	<string>Jetpack Test</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIAppFonts</key>

@@ -76,7 +76,6 @@
 		3E65B30B1841984300AB8B57 /* flipped base background.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E65B30A1841984300AB8B57 /* flipped base background.png */; };
 		3E65B30E1841A1E900AB8B57 /* apparel-bottom.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E65B30C1841A1E900AB8B57 /* apparel-bottom.png */; };
 		3E65B30F1841A1E900AB8B57 /* apparel-top.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E65B30D1841A1E900AB8B57 /* apparel-top.png */; };
-		3E65B3111841D0A500AB8B57 /* FacebookSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E65B3101841D0A500AB8B57 /* FacebookSDK.framework */; };
 		3E65B3141841E80300AB8B57 /* Jetpacks.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E65B3131841E80300AB8B57 /* Jetpacks.m */; };
 		3E726FEB1841EF4E005F4A8D /* GameKitHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E726FEA1841EF4E005F4A8D /* GameKitHelper.m */; };
 		3E726FF11842B192005F4A8D /* IAPHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E726FF01842B192005F4A8D /* IAPHelper.m */; };
@@ -398,7 +397,6 @@
 		3E65B30A1841984300AB8B57 /* flipped base background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flipped base background.png"; sourceTree = "<group>"; };
 		3E65B30C1841A1E900AB8B57 /* apparel-bottom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "apparel-bottom.png"; sourceTree = "<group>"; };
 		3E65B30D1841A1E900AB8B57 /* apparel-top.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "apparel-top.png"; sourceTree = "<group>"; };
-		3E65B3101841D0A500AB8B57 /* FacebookSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FacebookSDK.framework; path = JetPack/FacebookSDK.framework; sourceTree = "<group>"; };
 		3E65B3121841E80300AB8B57 /* Jetpacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Jetpacks.h; sourceTree = "<group>"; };
 		3E65B3131841E80300AB8B57 /* Jetpacks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Jetpacks.m; sourceTree = "<group>"; };
 		3E726FE91841EF4E005F4A8D /* GameKitHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameKitHelper.h; sourceTree = "<group>"; };
@@ -844,7 +842,6 @@
 				3EBB773C17D402A500B7C537 /* OpenAL.framework in Frameworks */,
 				3EBB773E17D402A500B7C537 /* AudioToolbox.framework in Frameworks */,
 				3EBB774017D402A500B7C537 /* AVFoundation.framework in Frameworks */,
-				3E65B3111841D0A500AB8B57 /* FacebookSDK.framework in Frameworks */,
 				3EC3262C187CAE0100B525F3 /* libChartboost.a in Frameworks */,
 				3EBB774217D402A500B7C537 /* UIKit.framework in Frameworks */,
 				3EBB774417D402A500B7C537 /* Foundation.framework in Frameworks */,
@@ -1178,7 +1175,6 @@
 				3EBB774B17D402A500B7C537 /* JetPack */,
 				3E3AA032183B172C00CEDDF6 /* vunglepub */,
 				3EC32402187C5ACD00B525F3 /* MMSDK */,
-				3E65B3101841D0A500AB8B57 /* FacebookSDK.framework */,
 				3EBB773617D402A500B7C537 /* Frameworks */,
 				3EBB773517D402A500B7C537 /* Products */,
 			);
