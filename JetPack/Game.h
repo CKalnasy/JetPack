@@ -12,6 +12,10 @@
 #import "Player.h"
 #import "PowerUp.h"
 #import "SimpleAudioEngine.h"
+#import <iAd/iAd.h>
+#import "GADInterstitial.h"
+#import "Chartboost.h"
+
 
 #define GAME_LAYER_TAG 0
 #define GAME_SCENE_TAG 1
@@ -24,12 +28,13 @@
 #define MAX_OBS_PER_SCREEN 5
 #define SCORE_MODIFIER 24
 #define MONEY_BAG_VALUE 10
-#define COINS_TO_CONTINUE 500
+#define COINS_TO_CONTINUE 400
 #define POS_TO_FLIP 3.5
+#define COIN_PERCENTAGE_OF_SCORE 0.0225
 
 #define MAX_HEIGHT ([[UIScreen mainScreen] bounds].size.height) - 375
 
-@interface Game : CCLayer {
+@interface Game : CCLayer <ADInterstitialAdDelegate> {
     CGSize winSize;
     CGSize winSizeActual;
     
@@ -134,6 +139,11 @@
     
     int ranOutOfFuelSec;
     ALuint effect;
+    
+    ADInterstitialAd* iAd;
+    GADInterstitial* adMob;
+    
+    float deviceVersion;
 }
 
 @property (nonatomic, readwrite) BOOL isGameOver;

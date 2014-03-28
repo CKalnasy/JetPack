@@ -9,14 +9,25 @@
 #import <Foundation/Foundation.h>
 #import "cocos2d.h"
 #import "Chartboost.h"
+#import "AppDelegate.h"
+#import "MMInterstitial.h"
+#import "GADInterstitial.h"
+#import <iAd/iAd.h>
 
+#define IAD_TIMEOUT 3
 #define GAME_ENDED_SCENE_TAG 2
 #define GAME_ENDED_LAYER_TAG 22
 
-@interface GameEnded : CCLayer {
+@interface GameEnded : CCLayer <ADInterstitialAdDelegate> {
     CGSize winSize;
     CGSize winSizeActual;
+    ADInterstitialAd *interstitial;
+    int timeIAd;
+    int timeAdMob;
+    GADInterstitial* adMob;
 }
+
+
 
 +(CCScene *) scene;
 

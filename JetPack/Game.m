@@ -17,6 +17,7 @@
 #import "GameEnded.h"
 #import "AppDelegate.h"
 #import "GameKitHelper.h"
+#import <RevMobAds/RevMobAds.h>
 
 
 @implementation Game
@@ -42,7 +43,7 @@
         winSize = CGSizeMake(320, 480);    //screen size of 3.5" display
         winSizeActual = [[CCDirector sharedDirector] winSize];
         
-        numObsPerScreen = 3.15;
+        numObsPerScreen = 3.0;
         
         lastObsDeleted = 100;
         numObsAdded = 100;
@@ -94,6 +95,19 @@
         
         [[SimpleAudioEngine sharedEngine] preloadEffect:@"coin.wav"];
         
+        NSString* version = [[UIDevice currentDevice] systemVersion];
+        deviceVersion = version.floatValue;
+        
+        if (deviceVersion >= 7.0) {
+            iAd = [[ADInterstitialAd alloc] init];
+            iAd.delegate = self;
+        }
+        
+        adMob = [[GADInterstitial alloc] init];
+        adMob.adUnitID = @"ca-app-pub-2990915069046891/7775020160";
+        [adMob loadRequest:[GADRequest request]];
+
+        
         //adds touches input.  begins update methods
         self.touchEnabled=YES;
         
@@ -108,9 +122,10 @@
 }
 
 -(void) registerWithTouchDispatcher{
-    [[[CCDirector sharedDirector] touchDispatcher] addStandardDelegate:self priority:0];
+    //[[[CCDirector sharedDirector] touchDispatcher] addStandardDelegate:self priority:0];
+    [[[CCDirector sharedDirector] touchDispatcher] addTargetedDelegate:self priority:0 swallowsTouches:YES];
 }
-
+/*
 -(void) ccTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     if (player.isBoostingEnabled) {
         return;
@@ -144,6 +159,55 @@
     CCLOG(@"touches began");
 }
 -(void) ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+    if (player.isBoostingEnabled) {
+        return;
+    }
+    //[self removeChild:opacityLayer cleanup:NO];
+    [self schedule:@selector(gravityUpdate:)];
+    [self unschedule:@selector(speedUpdate:)];
+    hasGameBegun = YES;
+    
+    [[SimpleAudioEngine sharedEngine] setBackgroundMusicVolume:0.2];
+    
+    CCLOG(@"touches ended");
+}
+*/
+
+-(BOOL)ccTouchBegan:(UITouch *)touch withEvent:(UIEvent *)event {
+    if (player.isBoostingEnabled) {
+        return YES;
+    }
+    //dont move the player if the opacity layer is visible
+    [self schedule:@selector(speedUpdate:)];
+    [self unschedule:@selector(gravityUpdate:)];
+    self.accelerometerEnabled = YES;
+    
+    if (!isGameRunning) {
+        [self schedule:@selector(idlingjetpack:)];
+        if (![GlobalDataManager isSonudOnWithDict]) {
+            [[SimpleAudioEngine sharedEngine] setMute:NO];
+        }
+        [[SimpleAudioEngine sharedEngine] playBackgroundMusic:@"jetpack.wav" loop:YES];
+        if (![GlobalDataManager isSonudOnWithDict]) {
+            [[SimpleAudioEngine sharedEngine] setMute:YES];
+        }
+    }
+    isGameRunning = YES;
+    
+    isTouchingHorizObs = NO;
+    horizObsLandedOn = nil;
+    
+    if (![player areFeetAngled]) {
+        [player setAngledFeet:YES];
+    }
+    
+    [[SimpleAudioEngine sharedEngine] setBackgroundMusicVolume:1.0];
+    
+    CCLOG(@"touches began");
+    return YES;
+}
+
+-(void)ccTouchEnded:(UITouch *)touch withEvent:(UIEvent *)event {
     if (player.isBoostingEnabled) {
         return;
     }
@@ -526,7 +590,7 @@
         lastObsAdded = obs;
         numObsAdded++;
         
-        numObsPerScreen += 0.007;
+        numObsPerScreen += 0.0045;
         if (numObsPerScreen > MAX_OBS_PER_SCREEN) {
             numObsPerScreen = MAX_OBS_PER_SCREEN;
         }
@@ -971,7 +1035,7 @@
     
         //choose which power up to add
         int rand = arc4random() % 100 + 1;
-        if (rand <= 50) {
+        if (rand <= 40) {
             [self addBoost:pointToAdd];
         }
         else if (rand <= 70) {
@@ -1322,6 +1386,8 @@
         
         //stop detecting colisions
         doDetectCollisions = NO;
+        
+        player.fuel = player.maxFuel;
         
         //add power up bar
         [self addPowerUpBar:boost];
@@ -1784,13 +1850,14 @@
             [self continueGame];
         }
         else {
+            isGameOver = YES;
+            
             [self gameEnded];
             [self removeChild:continueMenu];
             
             opacityLayer = [CCLayerColor layerWithColor:ccc4(0, 0, 0, 150)];
             [self addChild:opacityLayer z:9];
             
-            isGameOver = YES;
             GameEnded* ge = [GameEnded node];
             [self addChild:ge z:10];
         }
@@ -1809,7 +1876,7 @@
 -(void) continueGame {
     //todo: ask if they would like to continue
     continueText1 = [CCLabelTTF labelWithString:@"CONTINUE PLAYING?" fontName:@"Orbitron-Medium" fontSize:21];
-    continueText2 = [CCLabelTTF labelWithString:@"500   " fontName:@"Orbitron-Medium" fontSize:21];
+    continueText2 = [CCLabelTTF labelWithString:@"400   " fontName:@"Orbitron-Medium" fontSize:21];
     continueCoin = [CCSprite spriteWithFile:@"store-coin.png"];
     continueTotalCoinsCoin = [CCSprite spriteWithFile:@"store-coin.png"];
     
@@ -1952,13 +2019,14 @@
     [self removeChild:continueTotalCoinsCoin];
 }
 -(void) doNotContinue:(id)sender {
+    isGameOver = YES;
+    
     [self gameEnded];
     [self removeChild:continueMenu];
     
     opacityLayer = [CCLayerColor layerWithColor:ccc4(0, 0, 0, 150)];
     [self addChild:opacityLayer z:9];
     
-    isGameOver = YES;
     GameEnded* ge = [GameEnded node];
     [self addChild:ge z:10];
     
@@ -2025,7 +2093,288 @@
 
 //game ended stuff
 -(void) gameEnded{
+    if (![GlobalDataManager isPremiumContentWithDict]) {
+        
+        if (deviceVersion >= 7.0) {
+            int rand = arc4random()%6;
+            
+            if (rand == 0 || rand == 1) {
+                if (iAd.loaded) {
+                    [iAd presentFromViewController:[[CCDirector sharedDirector]parentViewController]];
+                }
+                else if (adMob.isReady) {
+                    [adMob presentFromRootViewController:[[CCDirector sharedDirector]parentViewController]];
+                }
+                else if ([[Chartboost sharedChartboost] hasCachedInterstitial:@"After Game Ended"]) {
+                    [[Chartboost sharedChartboost] showInterstitial:@"After Game Ended"];
+                }
+                else {
+                    [[Chartboost sharedChartboost] cacheInterstitial:@"After Game Ended"];
+                    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+                    [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
+                        CCScene* s = [[CCDirector sharedDirector] runningScene];
+                        if (s.tag == GAME_SCENE_TAG) {
+                            Game* g = (Game*)[s getChildByTag:GAME_LAYER_TAG];
+                            
+                            if (g.isGameOver) {
+                                [fs showAd];
+                                NSLog(@"Ad loaded");
+                            }
+                            else {
+                                NSLog(@"Ad loaded but not at appropriate time");
+                            }
+                        }
+                        else {
+                            NSLog(@"Ad loaded but not at appropriate scene");
+                        }
+                    } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
+                        NSLog(@"Ad error: %@",error);
+                        //attempt to fill with other ad network here
+                    } onClickHandler:^{
+                        NSLog(@"Ad clicked");
+                    } onCloseHandler:^{
+                        NSLog(@"Ad closed");
+                    }];
+                }
+            }
+            else if (rand == 2 || rand == 3) {
+                if (adMob.isReady) {
+                    [adMob presentFromRootViewController:[[CCDirector sharedDirector]parentViewController]];
+                }
+                else if (iAd.loaded) {
+                    [iAd presentFromViewController:[[CCDirector sharedDirector]parentViewController]];
+                }
+                else if ([[Chartboost sharedChartboost] hasCachedInterstitial:@"After Game Ended"]) {
+                    [[Chartboost sharedChartboost] showInterstitial:@"After Game Ended"];
+                }
+                else {
+                    [[Chartboost sharedChartboost] cacheInterstitial:@"After Game Ended"];
+                    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+                    [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
+                        CCScene* s = [[CCDirector sharedDirector] runningScene];
+                        if (s.tag == GAME_SCENE_TAG) {
+                            Game* g = (Game*)[s getChildByTag:GAME_LAYER_TAG];
+                            
+                            if (g.isGameOver) {
+                                [fs showAd];
+                                NSLog(@"Ad loaded");
+                            }
+                            else {
+                                NSLog(@"Ad loaded but not at appropriate time");
+                            }
+                        }
+                        else {
+                            NSLog(@"Ad loaded but not at appropriate scene");
+                        }
+                    } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
+                        NSLog(@"Ad error: %@",error);
+                        //attempt to fill with other ad network here
+                    } onClickHandler:^{
+                        NSLog(@"Ad clicked");
+                    } onCloseHandler:^{
+                        NSLog(@"Ad closed");
+                    }];
+                }
+            }
+            else  if (rand == 4 || rand == 5) {
+                if ([[Chartboost sharedChartboost] hasCachedInterstitial:@"After Game Ended"]) {
+                    [[Chartboost sharedChartboost] showInterstitial:@"After Game Ended"];
+                }
+                else if (adMob.isReady) {
+                    [adMob presentFromRootViewController:[[CCDirector sharedDirector]parentViewController]];
+                }
+                else if (iAd.loaded) {
+                    [iAd presentFromViewController:[[CCDirector sharedDirector]parentViewController]];
+                }
+                else {
+                    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+                    [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
+                        CCScene* s = [[CCDirector sharedDirector] runningScene];
+                        if (s.tag == GAME_SCENE_TAG) {
+                            Game* g = (Game*)[s getChildByTag:GAME_LAYER_TAG];
+                            
+                            if (g.isGameOver) {
+                                [fs showAd];
+                                NSLog(@"Ad loaded");
+                            }
+                            else {
+                                NSLog(@"Ad loaded but not at appropriate time");
+                            }
+                        }
+                        else {
+                            NSLog(@"Ad loaded but not at appropriate scene");
+                        }
+                    } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
+                        NSLog(@"Ad error: %@",error);
+                        //attempt to fill with other ad network here
+                    } onClickHandler:^{
+                        NSLog(@"Ad clicked");
+                    } onCloseHandler:^{
+                        NSLog(@"Ad closed");
+                    }];
+                }
+                [[Chartboost sharedChartboost] cacheInterstitial:@"After Game Ended"];
+            }
+            else {
+                RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+                [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
+                    CCScene* s = [[CCDirector sharedDirector] runningScene];
+                    if (s.tag == GAME_SCENE_TAG) {
+                        Game* g = (Game*)[s getChildByTag:GAME_LAYER_TAG];
+                        
+                        if (g.isGameOver) {
+                            [fs showAd];
+                            NSLog(@"Ad loaded");
+                        }
+                        else {
+                            NSLog(@"Ad loaded but not at appropriate time");
+                        }
+                    }
+                    else {
+                        NSLog(@"Ad loaded but not at appropriate scene");
+                    }
+                } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
+                    NSLog(@"Ad error: %@",error);
+                    //attempt to fill with other ad network here
+                    if (iAd.loaded) {
+                        [iAd presentFromViewController:[[CCDirector sharedDirector]parentViewController]];
+                    }
+                    else if (adMob.isReady) {
+                        [adMob presentFromRootViewController:[[CCDirector sharedDirector]parentViewController]];
+                    }
+                    else if ([[Chartboost sharedChartboost] hasCachedInterstitial:@"After Game Ended"]) {
+                        [[Chartboost sharedChartboost] showInterstitial:@"After Game Ended"];
+                    }
+                    else {
+                        [[Chartboost sharedChartboost] cacheInterstitial:@"After Game Ended"];
+                    }
+                    
+                } onClickHandler:^{
+                    NSLog(@"Ad clicked");
+                } onCloseHandler:^{
+                    NSLog(@"Ad closed");
+                }];
+            }
+        }
+        else {
+            int rand = arc4random()%4 + 2;
+            
+            if (rand == 2 || rand == 3) {
+                if (adMob.isReady) {
+                    [adMob presentFromRootViewController:[[CCDirector sharedDirector]parentViewController]];
+                }
+                else if ([[Chartboost sharedChartboost] hasCachedInterstitial:@"After Game Ended"]) {
+                    [[Chartboost sharedChartboost] showInterstitial:@"After Game Ended"];
+                }
+                else {
+                    [[Chartboost sharedChartboost] cacheInterstitial:@"After Game Ended"];
+                    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+                    [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
+                        CCScene* s = [[CCDirector sharedDirector] runningScene];
+                        if (s.tag == GAME_SCENE_TAG) {
+                            Game* g = (Game*)[s getChildByTag:GAME_LAYER_TAG];
+                            
+                            if (g.isGameOver) {
+                                [fs showAd];
+                                NSLog(@"Ad loaded");
+                            }
+                            else {
+                                NSLog(@"Ad loaded but not at appropriate time");
+                            }
+                        }
+                        else {
+                            NSLog(@"Ad loaded but not at appropriate scene");
+                        }
+                    } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
+                        NSLog(@"Ad error: %@",error);
+                        //attempt to fill with other ad network here
+                    } onClickHandler:^{
+                        NSLog(@"Ad clicked");
+                    } onCloseHandler:^{
+                        NSLog(@"Ad closed");
+                    }];
+                }
+            }
+            else  if (rand == 4 || rand == 5) {
+                if ([[Chartboost sharedChartboost] hasCachedInterstitial:@"After Game Ended"]) {
+                    [[Chartboost sharedChartboost] showInterstitial:@"After Game Ended"];
+                }
+                else if (adMob.isReady) {
+                    [adMob presentFromRootViewController:[[CCDirector sharedDirector]parentViewController]];
+                }
+                else {
+                    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+                    [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
+                        CCScene* s = [[CCDirector sharedDirector] runningScene];
+                        if (s.tag == GAME_SCENE_TAG) {
+                            Game* g = (Game*)[s getChildByTag:GAME_LAYER_TAG];
+                            
+                            if (g.isGameOver) {
+                                [fs showAd];
+                                NSLog(@"Ad loaded");
+                            }
+                            else {
+                                NSLog(@"Ad loaded but not at appropriate time");
+                            }
+                        }
+                        else {
+                            NSLog(@"Ad loaded but not at appropriate scene");
+                        }
+                    } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
+                        NSLog(@"Ad error: %@",error);
+                        //attempt to fill with other ad network here
+                    } onClickHandler:^{
+                        NSLog(@"Ad clicked");
+                    } onCloseHandler:^{
+                        NSLog(@"Ad closed");
+                    }];
+                }
+                [[Chartboost sharedChartboost] cacheInterstitial:@"After Game Ended"];
+            }
+            else {
+                RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+                [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
+                    CCScene* s = [[CCDirector sharedDirector] runningScene];
+                    if (s.tag == GAME_SCENE_TAG) {
+                        Game* g = (Game*)[s getChildByTag:GAME_LAYER_TAG];
+                        
+                        if (g.isGameOver) {
+                            [fs showAd];
+                            NSLog(@"Ad loaded");
+                        }
+                        else {
+                            NSLog(@"Ad loaded but not at appropriate time");
+                        }
+                    }
+                    else {
+                        NSLog(@"Ad loaded but not at appropriate scene");
+                    }
+                } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
+                    NSLog(@"Ad error: %@",error);
+                    //attempt to fill with other ad network here
+                    if (adMob.isReady) {
+                        [adMob presentFromRootViewController:[[CCDirector sharedDirector]parentViewController]];
+                    }
+                    else if ([[Chartboost sharedChartboost] hasCachedInterstitial:@"After Game Ended"]) {
+                        [[Chartboost sharedChartboost] showInterstitial:@"After Game Ended"];
+                    }
+                    else {
+                        [[Chartboost sharedChartboost] cacheInterstitial:@"After Game Ended"];
+                    }
+                    
+                } onClickHandler:^{
+                    NSLog(@"Ad clicked");
+                } onCloseHandler:^{
+                    NSLog(@"Ad closed");
+                }];
+            }
+        }
+        
+    }
     //add to the total number of coins
+    numCoins = numCoins + (int)(scoreActual * COIN_PERCENTAGE_OF_SCORE);
+    [[GlobalDataManager sharedGlobalDataManager] setNumCoins:numCoins];
+    
     [GlobalDataManager setTotalCoinsWithDict:[GlobalDataManager totalCoinsWithDict] + numCoins];
     
     [GlobalDataManager setNumberOfAllCoinsWithDict:[GlobalDataManager numberOfAllCoinsWithDict] + numCoins];
@@ -2324,6 +2673,33 @@
     //[opacityLayer release];
 	//[super dealloc];
 }
+
+
+
+
+
+#pragma mark ADInterstitialViewDelegate methods
+
+// When this method is invoked, the application should remove the view from the screen and tear it down.
+// The content will be unloaded shortly after this method is called and no new content will be loaded in that view.
+// This may occur either when the user dismisses the interstitial view via the dismiss button or
+// if the content in the view has expired.
+- (void)interstitialAdDidUnload:(ADInterstitialAd *)interstitialAd
+{
+    iAd = [[ADInterstitialAd alloc] init];
+    iAd.delegate = self;
+    NSLog(@"did unload");
+}
+
+// This method will be invoked when an error has occurred attempting to get advertisement content.
+// The ADError enum lists the possible error codes.
+- (void)interstitialAd:(ADInterstitialAd *)interstitialAd didFailWithError:(NSError *)error
+{
+    iAd = [[ADInterstitialAd alloc] init];
+    iAd.delegate = self;
+}
+
+
 
 @end
 

@@ -623,6 +623,8 @@ static GlobalDataManager *sharedGlobalDataManager = nil;
 }
 
 
+
+
 - (void) dealloc
 {
     /*[sharedGlobalDataManager release];

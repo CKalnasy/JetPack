@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "cocos2d.h"
 
-#define NUMBER_OF_COINS_PER_VIEW 50
+#define NUMBER_OF_COINS_PER_VIEW 25
 #define MORE_COINS_LAYER_TAG 4
 #define HEADER_SIZE 67
 

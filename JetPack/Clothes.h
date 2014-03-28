@@ -11,7 +11,7 @@
 #import "Player.h"
 #import "Apparel.h"
 
-#define PRICE 400
+#define PRICE 200
 #define CLOTHES_TAG 21
 #define FONT_SIZE 19
 #define SMALLER_FONT_SIZE 10.5

@@ -9,6 +9,9 @@
 #import <UIKit/UIKit.h>
 #import "cocos2d.h"
 #import "Chartboost.h"
+#import "MMSDK.h"
+#import <CoreLocation/CoreLocation.h>
+#import "GADRequest.h"
 
 // Added only for iOS 6 support
 @interface MyNavigationController : UINavigationController <CCDirectorDelegate>
@@ -25,7 +28,10 @@
 @property (nonatomic, retain) UIWindow *window;
 @property (readonly) MyNavigationController *navController;
 @property (unsafe_unretained, readonly) CCDirectorIOS *director;
+@property (strong, nonatomic) CLLocationManager *locationManager;
 
 +(AppController*)appDelegate;
+
+-(GADRequest*)createRequest;
 
 @end

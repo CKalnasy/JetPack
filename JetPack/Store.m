@@ -213,9 +213,6 @@
     
     NSLog(@"Buying %@...", product.productIdentifier);
     [[JetpackIAPHelper sharedInstance] buyProduct:product];
-    
-    
-    [GlobalDataManager setIsPremiumContentWithDict:YES];
 }
 
 -(void) back:(id)sender{

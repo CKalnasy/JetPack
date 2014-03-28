@@ -12,6 +12,10 @@
 #import "Obstacles.h"
 #import "Player.h"
 #import "PowerUp.h"
+#import <iAd/iAd.h>
+#import "GADInterstitial.h"
+#import "Chartboost.h"
+#import <RevMobAds/RevMobAds.h>
 
 
 #define TIME_TRIAL_LAYER_TAG 0
@@ -28,7 +32,7 @@
 
 #define MAX_HEIGHT ([[UIScreen mainScreen] bounds].size.height) - 375
 
-@interface TimeTrial : CCLayer {
+@interface TimeTrial : CCLayer <ADInterstitialAdDelegate> {
     CGSize winSize;
     CGSize winSizeActual;
     
@@ -113,6 +117,11 @@
     
     BOOL isGameRunning;
     BOOL doDetectCollisions;
+    
+    ADInterstitialAd* iAd;
+    GADInterstitial* adMob;
+    
+    float deviceVersion;
 }
 
 @property (nonatomic, readwrite) BOOL isGameOver;

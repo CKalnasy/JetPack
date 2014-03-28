@@ -9,8 +9,6 @@
 #import "RevMobFullscreen.h"
 #import "RevMobPopup.h"
 
-//#import <CoreLocation/CoreLocation.h>
-
 
 typedef enum {
     RevMobAdsTestingModeOff = 0,
@@ -24,6 +22,11 @@ typedef enum {
     RevMobUserGenderFemale
 } RevMobUserGender;
 
+typedef enum {
+    RevMobParallaxModeOff = 0,
+    RevMobParallaxModeDefault,
+    RevMobParallaxModeWithBackground
+} RevMobParallaxMode;
 
 /**
  This is the main class to start using RevMob Ads.
@@ -51,6 +54,19 @@ typedef enum {
 
  */
 @property (nonatomic, assign) RevMobAdsTestingMode testingMode;
+
+/**
+ This property is used to set the parallaxe effect on ad units.
+ 
+ - RevMobParallaxModeOff - Turn off the parallax effect
+ 
+ - RevMobParallaxModeDefault - Use the default parallax effect
+ 
+ - RevMobParallaxModeWithBackground - Use the parallax with black background effect
+
+ Default value is RevMobParallaxModeOff.
+ */
+@property (nonatomic, assign) RevMobParallaxMode parallaxMode;
 
 /**
  This property is used to set the user gender in order to get targeted ads with higher eCPM.

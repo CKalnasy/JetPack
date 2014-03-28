@@ -99,77 +99,77 @@
         
         
         //ad
-        if (![GlobalDataManager isPremiumContentWithDict]) {
-            int rand = arc4random() % 2 + 1;
-            
-            if (rand == 1) {
-                //chartboost
-                if ([[Chartboost sharedChartboost] hasCachedInterstitial:@"After Game Ended"]) {
-                    [[Chartboost sharedChartboost] showInterstitial:@"After Game Ended"];
-                }
-                else {
-                    [[Chartboost sharedChartboost] cacheInterstitial:@"After Game Ended"];
-                    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
-                    [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
-                        CCScene* s = [[CCDirector sharedDirector] runningScene];
-                        if (s.tag == TIME_TRIAL_SCENE_TAG) {
-                            TimeTrial* g = (TimeTrial*)[s getChildByTag:TIME_TRIAL_LAYER_TAG];
-                            
-                            if (g.isGameOver) {
-                                [fs showAd];
-                                NSLog(@"Ad loaded");
-                            }
-                            else {
-                                NSLog(@"Ad loaded but not at appropriate time");
-                            }
-                        }
-                        else {
-                            NSLog(@"Ad loaded but not at appropriate scene");
-                        }
-                    } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
-                        NSLog(@"Ad error: %@",error);
-                        //attempt to fill with other ad network here
-                    } onClickHandler:^{
-                        NSLog(@"Ad clicked");
-                    } onCloseHandler:^{
-                        NSLog(@"Ad closed");
-                    }];
-                }
-                
-            }
-            else {
-                //revmob
-                RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
-                [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
-                    CCScene* s = [[CCDirector sharedDirector] runningScene];
-                    if (s.tag == TIME_TRIAL_SCENE_TAG) {
-                        TimeTrial* g = (TimeTrial*)[s getChildByTag:TIME_TRIAL_LAYER_TAG];
-                        
-                        if (g.isGameOver) {
-                            [fs showAd];
-                            NSLog(@"Ad loaded");
-                        }
-                        else {
-                            NSLog(@"Ad loaded but not at appropriate time");
-                        }
-                    }
-                    else {
-                        NSLog(@"Ad loaded but not at appropriate scene");
-                    }
-                    
-                } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
-                    NSLog(@"Ad error: %@",error);
-                    //attempt to fill with other ad network here
-                    if ([[Chartboost sharedChartboost] hasCachedInterstitial:@"After Game Ended"]) {
-                        [[Chartboost sharedChartboost] showInterstitial:@"After Game Ended"];
-                    }
-                } onClickHandler:^{
-                    NSLog(@"Ad clicked");
-                } onCloseHandler:^{
-                    NSLog(@"Ad closed");
-                }];
-            }
-        }
+//        if (![GlobalDataManager isPremiumContentWithDict]) {
+//            int rand = arc4random() % 2 + 1;
+//            
+//            if (rand == 1) {
+//                //chartboost
+//                if ([[Chartboost sharedChartboost] hasCachedInterstitial:@"After Game Ended"]) {
+//                    [[Chartboost sharedChartboost] showInterstitial:@"After Game Ended"];
+//                }
+//                else {
+//                    [[Chartboost sharedChartboost] cacheInterstitial:@"After Game Ended"];
+//                    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+//                    [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
+//                        CCScene* s = [[CCDirector sharedDirector] runningScene];
+//                        if (s.tag == TIME_TRIAL_SCENE_TAG) {
+//                            TimeTrial* g = (TimeTrial*)[s getChildByTag:TIME_TRIAL_LAYER_TAG];
+//                            
+//                            if (g.isGameOver) {
+//                                [fs showAd];
+//                                NSLog(@"Ad loaded");
+//                            }
+//                            else {
+//                                NSLog(@"Ad loaded but not at appropriate time");
+//                            }
+//                        }
+//                        else {
+//                            NSLog(@"Ad loaded but not at appropriate scene");
+//                        }
+//                    } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
+//                        NSLog(@"Ad error: %@",error);
+//                        //attempt to fill with other ad network here
+//                    } onClickHandler:^{
+//                        NSLog(@"Ad clicked");
+//                    } onCloseHandler:^{
+//                        NSLog(@"Ad closed");
+//                    }];
+//                }
+//                
+//            }
+//            else {
+//                //revmob
+//                RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
+//                [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
+//                    CCScene* s = [[CCDirector sharedDirector] runningScene];
+//                    if (s.tag == TIME_TRIAL_SCENE_TAG) {
+//                        TimeTrial* g = (TimeTrial*)[s getChildByTag:TIME_TRIAL_LAYER_TAG];
+//                        
+//                        if (g.isGameOver) {
+//                            [fs showAd];
+//                            NSLog(@"Ad loaded");
+//                        }
+//                        else {
+//                            NSLog(@"Ad loaded but not at appropriate time");
+//                        }
+//                    }
+//                    else {
+//                        NSLog(@"Ad loaded but not at appropriate scene");
+//                    }
+//                    
+//                } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
+//                    NSLog(@"Ad error: %@",error);
+//                    //attempt to fill with other ad network here
+//                    if ([[Chartboost sharedChartboost] hasCachedInterstitial:@"After Game Ended"]) {
+//                        [[Chartboost sharedChartboost] showInterstitial:@"After Game Ended"];
+//                    }
+//                } onClickHandler:^{
+//                    NSLog(@"Ad clicked");
+//                } onCloseHandler:^{
+//                    NSLog(@"Ad closed");
+//                }];
+//            }
+//        }
     }
     return self;
 }

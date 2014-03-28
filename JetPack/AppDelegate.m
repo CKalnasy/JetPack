@@ -18,7 +18,7 @@
 #import "vunglepub.h"
 #import <GameKit/GameKit.h>
 #import "JetpackIAPHelper.h"
-
+#import <iAd/iAd.h>
 
 @implementation MyNavigationController
 
@@ -71,12 +71,13 @@
 
 @implementation AppController 
 
-@synthesize window=window_, navController=navController_, director=director_;
+@synthesize window=window_, navController=navController_, director=director_, locationManager;
 
 - (BOOL)prefersStatusBarHidden
 {
     return YES;
 }
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {    
     [RevMobAds startSessionWithAppID:@"522e77a1db7709c9f9000031"];
@@ -85,14 +86,14 @@
     [self vungleStart];
     [VGVunglePub setDelegate:self];
     
-    Chartboost* cbv = [GlobalDataManager sharedGlobalDataManager].cb;
-    cbv = [Chartboost sharedChartboost];
-    cbv.appId = @"522e7eb717ba477e16000009";
-    cbv.appSignature = @"3ffe2184c225347db82fd1e9339e2bc30a299cc2";
-    cbv.delegate = self;
-    
-    [cbv startSession];
-    [[GlobalDataManager sharedGlobalDataManager] setCb:cbv];
+//    Chartboost* cbv;// = [GlobalDataManager sharedGlobalDataManager].cb;
+//    cbv = [Chartboost sharedChartboost];
+//    cbv.appId = @"522e7eb717ba477e16000009";
+//    cbv.appSignature = @"3ffe2184c225347db82fd1e9339e2bc30a299cc2";
+//    cbv.delegate = self;
+//    
+//    [cbv startSession];
+//    [[GlobalDataManager sharedGlobalDataManager] setCb:cbv];
     
     
     //cache ads (Vungle does this automatically)
@@ -100,6 +101,37 @@
     
     RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
     [ad loadAd];
+    
+    
+    
+    
+    [MMSDK initialize]; //Initialize a Millennial Media session
+    
+    //Create a location manager for passing location data for conversion tracking and ad requests
+    self.locationManager = [[CLLocationManager alloc] init];
+    [self.locationManager setDesiredAccuracy:kCLLocationAccuracyBest];
+    [self.locationManager startUpdatingLocation];
+    
+    
+    //Location Object
+    AppController *appDelegate = [AppController appDelegate];
+    
+    //MMRequest Object
+    MMRequest *request = [MMRequest requestWithLocation:appDelegate.locationManager.location];
+    
+    [MMInterstitial fetchWithRequest:request
+                                apid:@"147848"
+                        onCompletion:^(BOOL success, NSError *error) {
+                            if (success) {
+                                NSLog(@"Ad available");
+                            }
+                            else {
+                                NSLog(@"Error fetching ad: %@", error);
+                            }
+                        }];
+    
+    
+    
     
     
     
@@ -122,6 +154,11 @@
     if ([fileManager fileExistsAtPath: dataDocPath])
     {
         dataDict = [NSMutableDictionary dictionaryWithContentsOfFile: dataDocPath];
+        if ([dataDict count] == 25) {
+            [dataDict setObject:[NSNumber numberWithBool:NO] forKey:@"is first time opening 1.0.2"];
+            [dataDict setObject:[NSNumber numberWithBool:NO] forKey:@"is premium content"];
+        }
+        
     }
     else
     {
@@ -247,7 +284,7 @@
 	
 	// Assume that PVR images have premultiplied alpha
 	[CCTexture2D PVRImagesHavePremultipliedAlpha:YES];
-	
+
 	// Create a Navigation Controller with the Director
 	navController_ = [[MyNavigationController alloc] initWithRootViewController:director_];
 	navController_.navigationBarHidden = YES;
@@ -262,11 +299,12 @@
 	[window_ makeKeyAndVisible];
     
     
-    [glView setMultipleTouchEnabled:YES];
+    //[glView setMultipleTouchEnabled:YES];
 	
 	return YES;
 }
-
+     
+     
 // getting a call, pause the game
 -(void) applicationWillResignActive:(UIApplication *)application
 {
@@ -285,6 +323,13 @@
 -(void) applicationDidBecomeActive:(UIApplication *)application
 {
     [[GameKitHelper sharedGameKitHelper] authenticateLocalPlayer];
+    
+    Chartboost* cbv = [Chartboost sharedChartboost];
+    cbv.appId = @"522e7eb717ba477e16000009";
+    cbv.appSignature = @"3ffe2184c225347db82fd1e9339e2bc30a299cc2";
+    cbv.delegate = self;
+    
+    [cbv startSession];
     
 	[[CCDirector sharedDirector] setNextDeltaTimeZero:YES];
 	if( [navController_ visibleViewController] == director_ )
@@ -373,24 +418,6 @@
     }
     
     // Otherwise return NO to display the interstitial
-//    NSLog(@"not going to display interstitial at location %@", location);
-//    
-//    RevMobFullscreen *ad = [[RevMobAds session] fullscreen]; // you must retain this object
-//    [ad loadWithSuccessHandler:^(RevMobFullscreen *fs) {
-//        
-//        
-//        
-//        [fs showAd];
-//        NSLog(@"Ad loaded");
-//    } andLoadFailHandler:^(RevMobFullscreen *fs, NSError *error) {
-//        NSLog(@"Ad error: %@",error);
-//        //attempt to fill with other ad network here
-//    } onClickHandler:^{
-//        NSLog(@"Ad clicked");
-//    } onCloseHandler:^{
-//        NSLog(@"Ad closed");
-//    }];
-    
     return NO;
 }
 
@@ -504,7 +531,7 @@
 -(void)vungleStart
 {
     VGUserData*  data  = [VGUserData defaultUserData];
-    NSString*    appID = @"vungleTest";
+    NSString*    appID = @"52311c72962e146554000009";
     
     // set up config data
     data.adOrientation   = VGAdOrientationPortrait;
@@ -538,6 +565,29 @@
     if (scene.didWatchAd) {
         [scene adClosed];
     }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+- (GADRequest *)createRequest {
+    GADRequest *request = [GADRequest request];
+    
+    // Make the request for a test ad. Put in an identifier for the simulator as
+    // well as any devices you want to receive test ads.
+    request.testDevices = @[ @"91677a37325747320a9575c2e08621fe" ];
+    
+    return request;
 }
 
 

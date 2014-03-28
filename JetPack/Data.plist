@@ -52,5 +52,7 @@
 	<false/>
 	<key>is yellow bought</key>
 	<false/>
+	<key>is first time opening 1.0.2</key>
+	<false/>
 </dict>
 </plist>
